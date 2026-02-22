@@ -40,6 +40,8 @@ kanban-plugin: board
         but something was broken about it and i removed it, now its a real inconvenient to always have to
         pass a decoded start value all the time. I think if the start value is something like 0, then we can decode
         that location automatically for the real start.
+- [ ] Add Document Comments for generated code
+- [ ] reserving 'start' is super annoying, make it something more unique so others can use the word.
 
 
 ## Addon/Plugin
