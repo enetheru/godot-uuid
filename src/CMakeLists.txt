@@ -31,9 +31,9 @@ string( CONFIGURE "${GDEXT_FILE_STRING}" GDEXT_FILE_STRING_CONFIGURED)
 
 # use generate so generator expressions are evaluated.
 file( GENERATE
-        OUTPUT ${CMAKE_SOURCE_DIR}/project/addons/${GDE_NAME}/${GDE_NAME}.gdextension
+        OUTPUT ${GDE_INSTALL_PATH}/${GDE_NAME}.gdextension
         CONTENT "${GDEXT_FILE_STRING_CONFIGURED}"
 )
 
 # TODO, modify godot.fbs to cater to double precision builds
-configure_file( builtin/godot.fbs ${CMAKE_SOURCE_DIR}/project/addons/${GDE_NAME}/godot.fbs )
+configure_file( builtin/godot.fbs ${GDE_INSTALL_PATH}/godot.fbs )

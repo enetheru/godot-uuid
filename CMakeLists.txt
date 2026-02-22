@@ -17,15 +17,22 @@ option( CMAKE_EXPORT_COMPILE_COMMANDS
 # So that I can condifgure for the flatc compiler, and not the extension.
 option( BUILD_EXTENSION "build the extension" ON)
 
-## Target options
-set( GDE_NAME "gdflatbuffers" )
-
 ### Information regarding the godot executable
-set( GODOT_EXECUTABLE "" CACHE FILEPATH
+set( GODOT_EXECUTABLE "${GODOT}" CACHE FILEPATH
         "Path to the godot executable you are targeting" )
 
 set( GODOT_PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/project" CACHE PATH
-        "Path to a demo project that can test the gdextension" )
+        "Path to a demo project that can test the godot-extension" )
+
+set( AUTHOR_TAG "Enetheru")
+string( TOLOWER "${AUTHOR_TAG}" AUTHOR_TAG_LOWER )
+
+## Target options
+set( GDE_NAME "flatbuffers" )
+
+set( GODOT_PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/project" )
+set( GDE_INSTALL_NAME "${AUTHOR_TAG_LOWER}.${GDE_NAME}-extension" )
+set( GDE_INSTALL_PATH "${GODOT_PROJECT_PATH}/addons/${GDE_INSTALL_NAME}")
 
 #[==============================[ Dependencies ]==============================]
 include(FetchContent)
@@ -82,7 +89,7 @@ set_target_properties(
         PROPERTIES
         EXCLUDE_FROM_ALL OFF
         OUTPUT_NAME "flatc$<$<CONFIG:Debug,RelWithDebInfo>:.$<LOWER_CASE:$<CONFIG>>>"
-        RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_CURRENT_SOURCE_DIR}/project/addons/${GDE_NAME}/bin>"
+        RUNTIME_OUTPUT_DIRECTORY "$<1:${GDE_INSTALL_PATH}/bin>"
 )
 
 # If we dont want to build the extension then we can stop here
@@ -147,9 +154,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory( src )
 
-add_library( ${GDE_NAME} SHARED )
+add_library( "godot-flatbuffers" SHARED )
 
-target_sources( ${GDE_NAME}
+target_sources( "godot-flatbuffers"
     PRIVATE
         ${SOURCES}
         ${DOC_SOURCE_PATH}
@@ -158,16 +165,16 @@ target_sources( ${GDE_NAME}
 # conditionally add doc data to compile output
 if(GODOTCPP_TARGET MATCHES "editor|template_debug")
     file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/doc_classes/*.xml")
-    target_doc_sources( ${GDE_NAME} ${DOC_XML} )
+    target_doc_sources( "godot-flatbuffers" ${DOC_XML} )
 endif()
 
-target_link_libraries( ${GDE_NAME} PRIVATE godot-cpp FlatBuffers::FlatBuffers stduuid uuid_v4::uuid_v4)
+target_link_libraries( "godot-flatbuffers" PRIVATE godot-cpp FlatBuffers::FlatBuffers stduuid uuid_v4::uuid_v4)
 
-set_target_properties( ${GDE_NAME}
+set_target_properties( "godot-flatbuffers"
         PROPERTIES
-        FOLDER "gdflatbuffers"
+        FOLDER "godot-flatbuffers"
         #The generator expression here prevents a subdir from being created.
-        RUNTIME_OUTPUT_DIRECTORY "$<1:${CMAKE_CURRENT_SOURCE_DIR}/project/addons/${GDE_NAME}/bin>"
+        RUNTIME_OUTPUT_DIRECTORY "$<1:${GDE_INSTALL_PATH}/bin>"
         OUTPUT_NAME "${GDE_NAME}.${GODOTCPP_SUFFIX}$<$<CONFIG:Debug,RelWithDebInfo>:.$<LOWER_CASE:$<CONFIG>>>"
         PREFIX ""
 )
