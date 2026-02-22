@@ -3,6 +3,7 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 
+#include "flatbufferverifier.hpp"
 #include "flatbuffers/flatbuffers.h"
 #include "godot_cpp/variant/variant_internal.hpp"
 
@@ -15,11 +16,18 @@ class FlatBuffer final : public godot::RefCounted {
   typedef uint16_t voffset_t;
   typedef uint32_t uoffset_t;
 
+  // This is actually a PackedByteArray, but because of gdextension
+  // we need to keep our data as a Variant to avoid value semantic copies.
   godot::Variant variant;
 
-  const godot::PackedByteArray *bytes;
+  // This is a pointer to the variant, to allow modification of the data
+  // across the plugin boundary, we need to pass by Variant,
+  const godot::PackedByteArray* bytes;
 
-  int64_t        start{};
+  // Starting position of the buffer.
+  // because we're using packed byte arrays, i need the offset into the buffer
+    // where we begin.
+  int64_t start{};
 
 protected:
 
@@ -33,9 +41,9 @@ public:
   // Get and Set of properties
   [[nodiscard]]
   auto get_bytes() const -> godot::Variant{ return variant; }
-  auto set_bytes(const godot::Variant &variant )  -> void {
-    bytes = godot::VariantInternal::get_byte_array( &variant );
-    this->variant = variant ;
+  auto set_bytes(const godot::Variant &new_var )  -> void {
+    bytes = godot::VariantInternal::get_byte_array( &new_var );
+    this->variant = new_var;
   }
 
   [[nodiscard]]
@@ -97,6 +105,61 @@ public:
 
     return decode_gtype<GType>( element_start );
   }
+
+    //MARK:
+
+
+  //MARK: Verification
+  // │__   __       _  __ _         _   _
+  // │\ \ / /__ _ _(_)/ _(_)__ __ _| |_(_)___ _ _
+  // │ \ V / -_) '_| |  _| / _/ _` |  _| / _ \ ' \
+  // │  \_/\___|_| |_|_| |_\__\__,_|\__|_\___/_||_|
+  // ╰───────────────────────────────────────────────
+
+  // Verify the vtable of this table.
+  // Call this once per table, followed by VerifyField once per field.
+  bool verify_table_start(const FlatBufferVerifier *verifier) const {
+    return verifier->verify_table_start(bytes->ptr()+start);
+  }
+
+
+    template <typename T>
+    bool verify_field( const FlatBufferVerifier *verifier, const voffset_t field, const size_t align ) const
+    {
+      // Calling GetOptionalFieldOffset should be safe now thanks to VerifyTable().
+      const auto field_offset = get_optional_field_offset(field);
+
+      return !field_offset ||
+        verifier->verify_field<T>(bytes->ptr()+start, field_offset, align);
+    }
+
+
+  const uint8_t* get_vtable() const
+  {
+    return bytes->ptr() + start - flatbuffers::ReadScalar<soffset_t>(bytes->ptr() + start);
+  }
+
+
+  // This gets the field offset for any of the functions below it, or 0
+  // if the field was not present.
+  voffset_t get_optional_field_offset(const voffset_t field) const {
+    // The vtable offset is always at the start.
+    const auto vtable = get_vtable();
+    // The first element is the size of the vtable (fields + type id + itself).
+    const auto vtsize = flatbuffers::ReadScalar<voffset_t>(vtable);
+    // If the field we're accessing is outside the vtable, we're reading older
+    // data, so it's the same as if the offset was 0 (not present).
+    return field < vtsize ? flatbuffers::ReadScalar<voffset_t>(vtable + field) : 0;
+  }
+
+  // VerifyFieldRequired
+  // VerifyOffset
+  // VerifyOffsetRequired
+  // VerifyOffset64
+  // VerifyOffset64Required
+  // VerifyStringWithDefault
+  // VerifyVectorWithDefault
+  // VerifyVector64WithDefault
 };
 } //namespace godot_flatbuffers
 

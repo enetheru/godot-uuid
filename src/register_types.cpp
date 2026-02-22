@@ -11,6 +11,7 @@
 #include "uuid.hpp"
 #include "flatbuffer.hpp"
 #include "flatbufferbuilder.hpp"
+#include "flatbufferverifier.hpp"
 
 void initialize_module( const godot::ModuleInitializationLevel p_level ) {
   if( p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE ) {
@@ -21,6 +22,7 @@ void initialize_module( const godot::ModuleInitializationLevel p_level ) {
   godot::ClassDB::register_class< UUID >();
   godot::ClassDB::register_class< FlatBuffer >();
   godot::ClassDB::register_class< FlatBufferBuilder >();
+  godot::ClassDB::register_class< FlatBufferVerifier >();
   godot::UtilityFunctions::print( "gdflatbuffers initialised" );
 }
 

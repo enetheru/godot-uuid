@@ -166,6 +166,21 @@ void FlatBuffer::_bind_methods() {
   // PACKED_VECTOR3_ARRAY,
   // PACKED_COLOR_ARRAY,
   // PACKED_VECTOR4_ARRAY,
+
+  //MARK: Verification Bindings
+  ClassDB::bind_method( D_METHOD( "verify_table_start", "verifier" ), &FlatBuffer::verify_table_start );
+
+  // field verifiers
+  ClassDB::bind_method( D_METHOD( "verify_field_u8", "verifier", "field", "align" ), &FlatBuffer::verify_field<uint8_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_s8", "verifier", "field", "align" ), &FlatBuffer::verify_field<int8_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_u16", "verifier", "field", "align" ), &FlatBuffer::verify_field<uint16_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_s16", "verifier", "field", "align" ), &FlatBuffer::verify_field<int16_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_u32", "verifier", "field", "align" ), &FlatBuffer::verify_field<uint32_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_s32", "verifier", "field", "align" ), &FlatBuffer::verify_field<int32_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_u64", "verifier", "field", "align" ), &FlatBuffer::verify_field<uint64_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_s64", "verifier", "field", "align" ), &FlatBuffer::verify_field<int64_t> );
+  ClassDB::bind_method( D_METHOD( "verify_field_float", "verifier", "field", "align" ), &FlatBuffer::verify_field<float> );
+  ClassDB::bind_method( D_METHOD( "verify_field_double", "verifier", "field", "align" ), &FlatBuffer::verify_field<double> );
 }
 
 // MARK: Function Definitions
