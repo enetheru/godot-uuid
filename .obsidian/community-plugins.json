@@ -1,5 +1,6 @@
 [
-  "gdscript-syntax-highlighting",
   "obsidian-kanban",
-  "obsidian-quiet-outline"
+  "obsidian-quiet-outline",
+  "table-editor-obsidian",
+  "shiki-highlighter"
 ]

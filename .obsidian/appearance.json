@@ -1,5 +1,8 @@
 {
   "accentColor": "",
-  "monospaceFontFamily": "FantasqueSansM Nerd Font Mono",
-  "cssTheme": "Everforest"
+  "monospaceFontFamily": "FiraCode Nerd Font Mono",
+  "cssTheme": "Everforest",
+  "interfaceFontFamily": "FiraCode Nerd Font Mono",
+  "textFontFamily": "FiraCode Nerd Font Mono",
+  "baseFontSizeAction": true
 }

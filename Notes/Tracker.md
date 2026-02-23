@@ -53,6 +53,7 @@ kanban-plugin: board
 - [ ] Notify user if creation date of fbs file is different to generated file and could use a re-gen
 - [ ] I saw someone using a struct visualiser, makes me want to build one for this.
 - [ ] Add an option to the settings to auto generate after a fbs file is changed.
+- [x] programmatic generation
 
 
 ## Syntax Highlighting

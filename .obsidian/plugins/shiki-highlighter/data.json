@@ -1,0 +1,12 @@
+{
+  "disabledLanguages": [],
+  "customThemeFolder": ".obsidian\\plugins\\shiki-highlighter\\custom-theme",
+  "customLanguageFolder": ".obsidian\\plugins\\shiki-highlighter\\custom-language",
+  "darkTheme": "obsidian-theme",
+  "lightTheme": "obsidian-theme",
+  "preferThemeColors": true,
+  "inlineHighlighting": true,
+  "ecDefaultShowLineNumbers": false,
+  "ecDefaultWrap": false,
+  "ecDefaultFrame": "auto"
+}

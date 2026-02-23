@@ -88,7 +88,7 @@
     "expandedKeys": []
   },
   "Notes/Features/Verification.md": {
-    "scroll": 3.472395896911621,
+    "scroll": 29.131250699361164,
     "cursor": {
       "from": {
         "line": 21,
@@ -104,17 +104,68 @@
     ]
   },
   "Notes/Tracker.md": {
-    "scroll": 19.403124809265137,
+    "scroll": 28.940930416264365,
     "cursor": {
       "from": {
-        "line": 43,
-        "ch": 100
+        "line": 55,
+        "ch": 29
       },
       "to": {
-        "line": 43,
-        "ch": 100
+        "line": 55,
+        "ch": 29
       }
     },
     "expandedKeys": []
+  },
+  "project/tests/fb_features/README.md": {
+    "scroll": 0,
+    "cursor": {
+      "from": {
+        "line": 3,
+        "ch": 0
+      },
+      "to": {
+        "line": 3,
+        "ch": 0
+      }
+    },
+    "expandedKeys": [
+      "item-1-0"
+    ]
+  },
+  "Notes/Untitled.md": {
+    "scroll": 0,
+    "cursor": {
+      "from": {
+        "line": 0,
+        "ch": 0
+      },
+      "to": {
+        "line": 0,
+        "ch": 0
+      }
+    },
+    "expandedKeys": []
+  },
+  "Notes/cmd-line options.md": {
+    "scroll": 181.80993946263047,
+    "cursor": {
+      "from": {
+        "line": 120,
+        "ch": 8
+      },
+      "to": {
+        "line": 120,
+        "ch": 8
+      }
+    },
+    "expandedKeys": [
+      "item-2-1",
+      "item-1-1",
+      "item-2-3",
+      "item-1-6",
+      "item-1-10",
+      "item-2-15"
+    ]
   }
 }

@@ -3,5 +3,6 @@
   "strictLineBreaks": false,
   "propertiesInDocument": "source",
   "showLineNumber": true,
-  "useTab": false
+  "useTab": false,
+  "showUnsupportedFiles": true
 }

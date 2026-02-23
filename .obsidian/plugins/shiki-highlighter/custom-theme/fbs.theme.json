@@ -1,0 +1,88 @@
+{
+  "name": "FlatBuffers Custom Dark",
+  "type": "dark",
+  "colors": {
+    "editor.foreground": "#d4d4d4",
+    "editor.background": "#1e1e1e"
+  },
+  "tokenColors": [
+    {
+      "scope": [
+        "keyword.control.flatbuffers",
+        "keyword.control.namespace.flatbuffers",
+        "keyword.control.table.flatbuffers",
+        "keyword.control.struct.flatbuffers",
+        "keyword.control.enum.flatbuffers",
+        "keyword.control.union.flatbuffers",
+        "keyword.control.root.flatbuffers",
+        "keyword.other.attribute.flatbuffers"
+      ],
+      "settings": {
+        "foreground": "#ff79c6",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "scope": "support.type.builtin.flatbuffers",
+      "settings": {
+        "foreground": "#8be9fd"
+      }
+    },
+    {
+      "scope": "support.type.user.flatbuffers",
+      "settings": {
+        "foreground": "#50fa7b"
+      }
+    },
+    {
+      "scope": [
+        "entity.name.type.flatbuffers",
+        "entity.name.table.flatbuffers",
+        "entity.name.struct.flatbuffers",
+        "entity.name.enum.flatbuffers",
+        "entity.name.union.flatbuffers"
+      ],
+      "settings": {
+        "foreground": "#f1fa8c"
+      }
+    },
+    {
+      "scope": "variable.other.property.flatbuffers",
+      "settings": {
+        "foreground": "#bd93f9"
+      }
+    },
+    {
+      "scope": "variable.other.enummember.flatbuffers",
+      "settings": {
+        "foreground": "#ffb86c"
+      }
+    },
+    {
+      "scope": "string.quoted.double.flatbuffers",
+      "settings": {
+        "foreground": "#f1fa8c"
+      }
+    },
+    {
+      "scope": "constant.numeric.flatbuffers",
+      "settings": {
+        "foreground": "#ff5555"
+      }
+    },
+    {
+      "scope": "meta.attribute-list.flatbuffers keyword.other.attribute.flatbuffers",
+      "settings": {
+        "foreground": "#ff79c6",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "scope": "comment",
+      "settings": {
+        "foreground": "#6272a4",
+        "fontStyle": "italic"
+      }
+    }
+  ]
+}

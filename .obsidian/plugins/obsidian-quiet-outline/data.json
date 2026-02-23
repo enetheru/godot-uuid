@@ -8,7 +8,7 @@
   "regex_search": false,
   "ellipsis": false,
   "label_direction": "left",
-  "drag_modify": false,
+  "drag_modify": true,
   "locate_by_cursor": false,
   "show_popover_key": "ctrlKey",
   "persist_md_states": true,
