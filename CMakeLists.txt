@@ -74,6 +74,9 @@ set( FLATBUFFERS_BUILD_TESTS        NO )
 set( FLATBUFFERS_INSTALL            NO )
 set( FLATBUFFERS_STATIC_FLATC      YES )
 set( FLATBUFFERS_BUILD_FLATC       YES )
+set( FLATBUFFERS_CPP_STD            17 )
+set( FLATBUFFERS_BUILD_CPP17       YES )
+
 
 FetchContent_Declare( FlatBuffers
         GIT_REPOSITORY  "${FLATBUFFERS_GIT_URL}"
