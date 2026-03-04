@@ -92,6 +92,7 @@ This is really the only side of the situation I care about.
 |   󱏘   | --filename-ext EXT       | The extension appended to the generated file names Default is language-specific (e.g., '.h' for C++) |
 |   󱏘   | --filename-suffix SUFFIX | The suffix appended to the generated file name  (Default is '_generated')                            |
 
+## Code Generation
 
 | action | flag                          | description                                                                                                                                                                                                          |
 | :----: | :---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

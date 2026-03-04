@@ -6,7 +6,6 @@ kanban-plugin: board
 
 ## Project
 
-- [ ] Split project into more logical chunks so that cloning the addon can be done directly into the addons folder
 
 
 ## gdextension
@@ -16,6 +15,7 @@ kanban-plugin: board
 - [ ] Migrate to godot4.6 / godot-cpp ~10
 - [ ] Verify the memory allocation strategy
 - [ ] Implement var_to_flexbuffer flexbuffer_to_var
+- [ ] FlatBufferBuilder.to_packed_byte_array does not match the c++ equivalent 'GetBufferPointer'
 
 
 ## flatc Generator
@@ -35,25 +35,24 @@ kanban-plugin: board
 - [ ] Fixed Sized arrays are still broken.
 - [ ] Would be nice to have a reset( data, start ) function
 - [ ] Because the object acts like a view, it can be broken easily if the bytes are modified.
-  - [ ] Add an is_valid() function.
+      - [ ] Add an is_valid() function.
 - [ ] it used to be the case that the decode of the starting point would happen automatically
         but something was broken about it and i removed it, now its a real inconvenient to always have to
         pass a decoded start value all the time. I think if the start value is something like 0, then we can decode
         that location automatically for the real start.
 - [ ] Add Document Comments for generated code
 - [ ] reserving 'start' is super annoying, make it something more unique so others can use the word.
+- [ ] boolean value is misrepresented as an int in the create_* functions
 
 
 ## Addon/Plugin
 
 - [ ] Reload script in editor after re-generation
 - [ ] Make failed compile popup
-- [ ] Move editor settings to project settings
 - [ ] Add filename to debug print
 - [ ] Notify user if creation date of fbs file is different to generated file and could use a re-gen
 - [ ] I saw someone using a struct visualiser, makes me want to build one for this.
 - [ ] Add an option to the settings to auto generate after a fbs file is changed.
-- [x] programmatic generation
 
 
 ## Syntax Highlighting
@@ -62,7 +61,6 @@ kanban-plugin: board
 - [ ] Parse includes for names
 - [ ] Keep track of field names and highlight duplicates
 - [ ] ANNOYING: Parsing runs on every keypress, printing errors each time until correctness is achieved
-- [ ] To get file extension recognition working I need to create a ResourceFormatLoader https://docs.godotengine.org/en/stable/classes/class_resourceformatloader.html
 
 
 ## Testing
@@ -96,6 +94,10 @@ kanban-plugin: board
 - [ ] flatbuffers namespace == class name prefix
 - [ ] new GetRoot function in gdscript to get root flatbuffer
 - [ ] GetRoot needs to be a static function
+- [ ] Split project into more logical chunks so that cloning the addon can be done directly into the addons folder
+- [ ] To get file extension recognition working I need to create a ResourceFormatLoader https://docs.godotengine.org/en/stable/classes/class_resourceformatloader.html
+- [ ] Move editor settings to project settings
+- [x] programmatic generation
 
 %% kanban:settings
 ```

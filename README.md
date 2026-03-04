@@ -6,17 +6,22 @@ This is a work in progress, and I would appreciate any and all feedback relating
 
 **If there are any requests please drop them in an issue and I'll look into it.**
 
-The project consists of three main areas:
+The project consists of four main areas:
 
 1. The modifications to the flatc compiler which generates gdscript
    * `flatc --gdscript <schema.fbs>`
    * [enetheru/flatbuffers](https://github.com/enetheru/flatbuffers) is acquired automatically during CMake configuration.
-1. The gdextension binary plugin - This Github Project
+1. The GDExtension binary plugin - this repository
    * `FlatbufferBuilder` Godot Object Class
    * `Flatbuffer` Godot Object Class
-1. The Godot editor addon - `project/addons/gdflatbuffers`
-   * Syntax Highlighting of flatbuffer schema files `*.fbs`
-   * Context menu's for calling flatc to generate gdscript from flatbuffer schema
+   * `UUID` Godot Object Class for creating uuid numbers( requires additional libraries )
+1. The Godot Editor addon/plugin
+   * Syntax Highlighting of FlatBuffers schema files `*.fbs`
+   * Context menu's for calling flatc to generate GDScript from flatbuffer schema
+   * [enetheru/godot-flatbuffers-addon](https://github.com/enetheru/godot-flatbuffers-addon/)
+1. The Development and Testing Godot Project
+    - For all the integration testing and experimentation
+    - [enetheru/godot-flatbuffers-project](https://github.com/enetheru/godot-flatbuffers-project/)
 
 
 ### Installation
@@ -36,11 +41,11 @@ or in godot discord gdextension/c++ channels linked at the bottom of this docume
 First you might want to read up on the [Flatbuffers Documentation](https://flatbuffers.dev/index.html)
 
 #### Step One - Create a schema file
-ie.
 
-`my_object.fbs`
 
-```flatbuffers
+
+```fbs
+// my_object.fbs
 table MyObject {
     var_name:int32;
 }
@@ -187,6 +192,12 @@ C++ sense with symbols and less optimisation. `template_debug` is for developing
 providing debug versions to customers that provide more information. When in doubt, build in `Release` mode with `template_debug`
 
 your cmake command will probably have these two items in it somewhere: `-DCMAKE_BUILD_TYPE=Release`, `-DGODOTCPP_TARGET:STRING=template_debug`
+
+#### Import Plugin
+I just spent three to four days trying to get an import plugin to work that would still allow editing of the schema file as a text document and frustrated myself over and over with the limitations of that process.
+
+#### ResourceFormatLoader
+Similarly with the resource format loader, all of my attempts failed, mainly due to godot no longer recognising the file as something that is editable inside godot as plain text. 
 
 ---
 
