@@ -67,3 +67,4 @@ lib/*/
 # Obsidian annoyances
 .obsidian/workspace.json
 project/
+.obsidian/plugins/obsidian-quiet-outline/markdown-states.json

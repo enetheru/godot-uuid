@@ -5,4 +5,4 @@ compatibility_minimum = "${GODOT_VERSION_MAJOR}.${GODOT_VERSION_MINOR}"
 reloadable = $<IF:$<BOOL:${GODOTCPP_USE_HOT_RELOAD}>,true,false>
 
 [libraries]
-${GODOTCPP_PLATFORM}.${GODOTCPP_TARGET}.$<$<CONFIG:Debug,RelWithDebInfo>:$<LOWER_CASE:$<CONFIG>>>.${GODOTCPP_ARCH} = "bin/$<TARGET_FILE_NAME:godot-flatbuffers>"
+${GODOTCPP_PLATFORM}.${GODOTCPP_TARGET}$<$<CONFIG:Debug,RelWithDebInfo>:.$<LOWER_CASE:$<CONFIG>>>.${GODOTCPP_ARCH} = "bin/$<TARGET_FILE_NAME:godot-flatbuffers>"

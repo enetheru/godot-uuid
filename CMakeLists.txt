@@ -114,8 +114,9 @@ endif ()
 set( GODOTCPP_GIT_URL "https://github.com/godotengine/godot-cpp.git" CACHE STRING "Location of the godot-cpp git repository" )
 set( GODOTCPP_GIT_TAG "godot-4.5-stable" CACHE STRING "git hash, branch or tag to fetch" )
 
-set( GODOTCPP_TARGET "template_debug" CACHE STRING "")
+set( GODOTCPP_TARGET "editor" CACHE STRING "")
 set( GODOTCPP_BUILD_PROFILE "${CMAKE_CURRENT_SOURCE_DIR}/lib/godot-cpp.build_profile.json")
+set( GODOTCPP_USE_HOT_RELOAD ON)
 
 #if( GODOT_GIT_TAG STREQUAL "" )
 #    include( godot-cpp-git-tag )
