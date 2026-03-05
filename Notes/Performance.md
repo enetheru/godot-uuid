@@ -82,3 +82,21 @@ BM_Raw_Use            ERROR OCCURRED: 'Checksum did not match: 25246557016202457
 6 benchmarks
 ```
 so I have some things to look at, I think the times are wrong. I think I need to brush off my tracy binary to have a look at the numbers.
+
+**Update 2026-03-05**: I compiled godot 4.7-dev with default options, I was using debug builds before, and I looked into tracy logs but didn't see anything specific I could point to. either way, I'm mostly unhappy with these scenarios. I don't think they are a very good match and they don't provide nice enough data right now.
+```
+2026-03-05T17:13:07
+Running C:/build/godot/w64.mingw64.x86_64.windows.editor.default/bin/godot.windows.editor.x86_64.exe
+Run on (16 X 0.000000 MHz CPUs)
+***WARNING*** Library was built as DEBUG. Timings may be affected.
+----------------------------------------------------------------
+Benchmark                      Time             CPU   Iterations
+----------------------------------------------------------------
+BM_Flatbuffers_Encode      93531 ns        93531 ns         7035
+BM_Flatbuffers_Decode       1001 ns         1001 ns       664521
+BM_Flatbuffers_Use         85863 ns        85863 ns         7258
+BM_Raw_Encode              69667 ns        69667 ns        10128
+BM_Raw_Decode              77387 ns        77387 ns         8901
+BM_Raw_Use                  8762 ns         8762 ns        76893
+6 benchmarks
+```

@@ -4,5 +4,6 @@
   "cssTheme": "Everforest",
   "interfaceFontFamily": "FiraCode Nerd Font Mono",
   "textFontFamily": "FiraCode Nerd Font Mono",
-  "baseFontSizeAction": true
+  "baseFontSizeAction": true,
+  "baseFontSize": 15
 }
