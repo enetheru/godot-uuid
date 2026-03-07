@@ -17,17 +17,17 @@ class FlatBuffer final : public godot::RefCounted {
   typedef uint32_t uoffset_t;
 
   // This is actually a PackedByteArray, but because of gdextension
-  // we need to keep our data as a Variant to avoid value semantic copies.
+  // we need to keep our data as a Variant to avoid value copies.
   godot::Variant variant;
 
   // This is a pointer to the variant, to allow modification of the data
   // across the plugin boundary, we need to pass by Variant,
-  const godot::PackedByteArray* bytes;
+  const godot::PackedByteArray* fb_bytes;
 
   // Starting position of the buffer.
   // because we're using packed byte arrays, i need the offset into the buffer
     // where we begin.
-  int64_t start{};
+  int64_t fb_start{};
 
 protected:
 
@@ -42,13 +42,13 @@ public:
   [[nodiscard]]
   auto get_bytes() const -> godot::Variant{ return variant; }
   auto set_bytes(const godot::Variant &new_var )  -> void {
-    bytes = godot::VariantInternal::get_byte_array( &new_var );
+    fb_bytes = godot::VariantInternal::get_byte_array( &new_var );
     this->variant = new_var;
   }
 
   [[nodiscard]]
-  auto get_start() const -> int64_t { return start; }
-  auto set_start( const int64_t start_ ) -> void { start = start_; }
+  auto get_start() const -> int64_t { return fb_start; }
+  auto set_start( const int64_t start_ ) -> void { fb_start = start_; }
 
   // Field offset and position
   [[nodiscard]] int64_t get_field_offset( int64_t vtable_offset ) const;
@@ -67,8 +67,8 @@ public:
   // Specialisations exist in the cpp file
   template< typename GType >
   auto encode_gtype( const int64_t start_, const GType &value ) -> void {
-    ERR_FAIL_INDEX_EDMSG(start_ + sizeof(GType), bytes->size(), "Not enough room in the buffer to encode object");
-    const auto mem = const_cast<godot::PackedByteArray*>(bytes)->ptrw() + start_;
+    ERR_FAIL_INDEX_EDMSG(start_ + sizeof(GType), fb_bytes->size(), "Not enough room in the buffer to encode object");
+    const auto mem = const_cast<godot::PackedByteArray*>(fb_bytes)->ptrw() + start_;
     memcpy( mem , &value, sizeof(GType)  );
   }
 
@@ -78,7 +78,7 @@ public:
   template< typename GType > [[nodiscard]]
   auto decode_gtype( const int64_t start_ ) const -> GType {
     assert(start_ + sizeof( GType ) <= bytes->size() );
-    const auto p = const_cast< uint8_t * >(bytes->ptr() + start_);
+    const auto p = const_cast< uint8_t * >(fb_bytes->ptr() + start_);
     return *reinterpret_cast< GType * >(p);
   }
 
@@ -87,7 +87,7 @@ public:
   auto get_gtype( const int64_t voffset ) const -> GType {
     const uoffset_t field_offset = get_field_offset( voffset );
     if( not field_offset) return {};
-    const uoffset_t field_start = start + field_offset;
+    const uoffset_t field_start = fb_start + field_offset;
     return decode_gtype<GType>( field_start );
   }
 
@@ -119,7 +119,7 @@ public:
   // Verify the vtable of this table.
   // Call this once per table, followed by VerifyField once per field.
   bool verify_table_start(const FlatBufferVerifier *verifier) const {
-    return verifier->verify_table_start(bytes->ptr()+start);
+    return verifier->verify_table_start(fb_bytes->ptr()+fb_start);
   }
 
 
@@ -130,13 +130,13 @@ public:
       const auto field_offset = get_optional_field_offset(field);
 
       return !field_offset ||
-        verifier->verify_field<T>(bytes->ptr()+start, field_offset, align);
+        verifier->verify_field<T>(fb_bytes->ptr()+fb_start, field_offset, align);
     }
 
 
   const uint8_t* get_vtable() const
   {
-    return bytes->ptr() + start - flatbuffers::ReadScalar<soffset_t>(bytes->ptr() + start);
+    return fb_bytes->ptr() + fb_start - flatbuffers::ReadScalar<soffset_t>(fb_bytes->ptr() + fb_start);
   }
 
 

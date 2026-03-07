@@ -26,17 +26,17 @@ namespace godot_flatbuffers {
 
 template<> [[nodiscard]]
 auto FlatBuffer::decode_gtype( const int64_t start_ ) const -> godot::PackedByteArray {
-  const int64_t size        = bytes->decode_u32( start_ );
+  const int64_t size        = fb_bytes->decode_u32( start_ );
   const int64_t array_start = start_ + 4;
-  return bytes->slice( array_start, array_start + size );
+  return fb_bytes->slice( array_start, array_start + size );
 }
 
 #define DECODE_PACKED_GTYPE( gtype, scalar, to_array_func ) \
 template<> [[nodiscard]] \
 auto FlatBuffer::decode_gtype( const int64_t start_ ) const -> godot::gtype { \
-  const int64_t length      = bytes->decode_u32( start_ ) * sizeof( scalar ); \
+  const int64_t length      = fb_bytes->decode_u32( start_ ) * sizeof( scalar ); \
   const int64_t array_start = start_ + 4; \
-  return bytes->slice( array_start, array_start + length ).to_array_func(); \
+  return fb_bytes->slice( array_start, array_start + length ).to_array_func(); \
 }
 
 // Ony a few of these functions exist in 'godot_cpp\variant\packed_byte_array.hpp'
@@ -48,19 +48,19 @@ DECODE_PACKED_GTYPE( PackedInt64Array, uint64_t, to_int64_array )
 
 template<> [[nodiscard]]
 auto FlatBuffer::decode_gtype( const int64_t start_ ) const -> godot::String{
-  return bytes->slice( start_ + 4, start_ + 4 + bytes->decode_u32( start_ ) ).get_string_from_utf8();
+  return fb_bytes->slice( start_ + 4, start_ + 4 + fb_bytes->decode_u32( start_ ) ).get_string_from_utf8();
 }
 
 
 template<> [[nodiscard]]
 auto FlatBuffer::decode_gtype( const int64_t start_ ) const -> godot::PackedStringArray {
-  const int64_t size = bytes->decode_u32( start_ );
+  const int64_t size = fb_bytes->decode_u32( start_ );
   const int64_t data = start_ + sizeof( uint32_t ); // NOLINT(*-narrowing-conversions)
 
   godot::PackedStringArray string_array;
   for( int i = 0; i < size; ++i ) {
     const int64_t  element = data + i * sizeof( uint32_t ); // NOLINT(*-narrowing-conversions)
-    const uint32_t offset  = bytes->decode_u32( element );
+    const uint32_t offset  = fb_bytes->decode_u32( element );
     string_array.append( decode_gtype<godot::String>( element + offset ) );
   }
   return string_array;
@@ -99,14 +99,14 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "get_memory_address" ), &FlatBuffer::get_memory_address );
 #endif
 
-  ClassDB::bind_method( D_METHOD( "set_bytes", "bytes" ), &FlatBuffer::set_bytes );
-  ClassDB::bind_method( D_METHOD( "get_bytes" ), &FlatBuffer::get_bytes );
-  ADD_PROPERTY( PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes"), "set_bytes", "get_bytes" );
+  ClassDB::bind_method( D_METHOD( "set_fb_bytes", "bytes" ), &FlatBuffer::set_bytes );
+  ClassDB::bind_method( D_METHOD( "get_fb_bytes" ), &FlatBuffer::get_bytes );
+  ADD_PROPERTY( PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_fb_bytes"), "set_fb_bytes", "get_fb_bytes" );
 
   //Properties
-  ClassDB::bind_method( D_METHOD( "set_start", "start" ), &FlatBuffer::set_start );
-  ClassDB::bind_method( D_METHOD( "get_start" ), &FlatBuffer::get_start );
-  ADD_PROPERTY( PropertyInfo(Variant::INT, "start"), "set_start", "get_start" );
+  ClassDB::bind_method( D_METHOD( "set_fb_start", "start" ), &FlatBuffer::set_start );
+  ClassDB::bind_method( D_METHOD( "get_fb_start" ), &FlatBuffer::get_start );
+  ADD_PROPERTY( PropertyInfo(Variant::INT, "_fb_start"), "set_fb_start", "get_fb_start" );
 
   // Field Access Helpers
   ClassDB::bind_method( D_METHOD( "get_field_offset", "vtable_offset" ), &FlatBuffer::get_field_offset );
@@ -117,7 +117,7 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "get_array_element_start", "array_start", "idx" ), &FlatBuffer::get_array_element_start );
 
   //Overwrite Bytes
-  ClassDB::bind_method( D_METHOD( "overwrite_bytes", "source", "from", "to", "size" ), &FlatBuffer::overwrite_bytes );
+  ClassDB::bind_method( D_METHOD( "overwrite_fb_bytes", "source", "from", "to", "size" ), &FlatBuffer::overwrite_bytes );
 
   //// decode atomic types
   // BOOL, INT, FLOAT, are handled natively by godot::PackedByteArray
@@ -195,17 +195,17 @@ void FlatBuffer::_bind_methods() {
 // If this is a table, or an array, it will be a relative offset to the position of the field.
 int64_t FlatBuffer::get_field_offset( const int64_t vtable_offset ) const {
   // get vtable
-  const int64_t vtable_pos = start - bytes->decode_s32( start );
+  const int64_t vtable_pos = fb_start - fb_bytes->decode_s32( fb_start );
   //int64_t table_size = bytes->decode_s16( vtable_pos + 2 ); Unnecessary
 
   // The vtable_pos being outside the range is not an error,
   // it simply means that the element is not present in the table.
-  if( const int64_t vtable_size = bytes->decode_s16( vtable_pos ); vtable_offset >= vtable_size ) {
+  if( const int64_t vtable_size = fb_bytes->decode_s16( vtable_pos ); vtable_offset >= vtable_size ) {
     return 0;
   }
 
   // decoding zero means that the field is not present.
-  return bytes->decode_s16( vtable_pos + vtable_offset );
+  return fb_bytes->decode_s16( vtable_pos + vtable_offset );
 }
 
 // returns offset from the zero of the bytes(PackedByteArray)
@@ -214,7 +214,7 @@ int64_t FlatBuffer::get_field_start( const int64_t vtable_offset ) const {
   const int field_offset = get_field_offset( vtable_offset ); // NOLINT(*-narrowing-conversions)
   if( ! field_offset )
     return 0;
-  return start + field_offset + bytes->decode_u32( start + field_offset );
+  return fb_start + field_offset + fb_bytes->decode_u32( fb_start + field_offset );
 }
 
 int64_t FlatBuffer::get_array_size( const int64_t vtable_offset ) const {
@@ -222,12 +222,12 @@ int64_t FlatBuffer::get_array_size( const int64_t vtable_offset ) const {
   if( ! foffset )
     return 0;
   const int64_t field_start = get_field_start( foffset );
-  return bytes->decode_u32( field_start );
+  return fb_bytes->decode_u32( field_start );
 }
 
 int64_t FlatBuffer::get_array_element_start(const int64_t array_start, const int64_t idx) const {
 #ifdef DEBUG_ENABLED
-  const int64_t array_size = bytes->decode_u32(array_start);
+  const int64_t array_size = fb_bytes->decode_u32(array_start);
   assert(array_start < bytes->size() - 4);
   assert(idx < array_size);
   assert(array_start + array_size * 4 < bytes->size());
@@ -235,7 +235,7 @@ int64_t FlatBuffer::get_array_element_start(const int64_t array_start, const int
 
   const int64_t data    = array_start + 4;
   const int64_t element = data + idx * 4;
-  const int64_t value   = bytes->decode_u32(element);
+  const int64_t value   = fb_bytes->decode_u32(element);
 
   return element + value;
 }
@@ -243,11 +243,11 @@ int64_t FlatBuffer::get_array_element_start(const int64_t array_start, const int
 auto FlatBuffer::overwrite_bytes(godot::Variant source, const int from, const int dest, const int size) const -> godot::Error {
   ERR_FAIL_COND_V_EDMSG( source.get_type() != godot::Variant::PACKED_BYTE_ARRAY, godot::ERR_INVALID_PARAMETER,
     "overwrite_bytes source must be a PackedByteArray" );
-  ERR_FAIL_INDEX_V_EDMSG(dest+size, bytes->size(), godot::ERR_INVALID_PARAMETER,
+  ERR_FAIL_INDEX_V_EDMSG(dest+size, fb_bytes->size(), godot::ERR_INVALID_PARAMETER,
     "Not enough memory for overwrite_bytes");
 
   const auto source_bytes = godot::VariantInternal::get_byte_array(&source)->ptr();
-  const auto dest_bytes = const_cast<godot::PackedByteArray*>(bytes)->ptrw();
+  const auto dest_bytes = const_cast<godot::PackedByteArray*>(fb_bytes)->ptrw();
   memcpy(dest_bytes + dest, source_bytes + from, size);
   return godot::OK;
 }

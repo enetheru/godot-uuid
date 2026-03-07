@@ -240,4 +240,4 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateString( const godot::Strin
   const auto str = string.utf8();
   return builder->CreateString( str.ptr(), str.size() ).o;
 }
-} //end namespace
+}  // namespace godot_flatbuffers
