@@ -8,7 +8,9 @@
  */
 namespace godot_flatbuffers {
 void FlatBufferBuilder::_bind_methods() {
-  using namespace godot;
+  // using namespace godot;
+  using godot::ClassDB;
+  using godot::D_METHOD;
 
   ClassDB::bind_static_method( "FlatBufferBuilder", D_METHOD( "create", "size" ), &Create );
 
@@ -157,11 +159,14 @@ void FlatBufferBuilder::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "create_PackedFloat64Array", "array" ), &FlatBufferBuilder::CreatePackedArray< double > );
   // PACKED_STRING_ARRAY,
   ClassDB::bind_method( D_METHOD( "create_PackedStringArray", "array" ), &FlatBufferBuilder::CreatePackedStringArray );
-
   // PACKED_VECTOR2_ARRAY,
+  ClassDB::bind_method( D_METHOD( "create_PackedVector2Array", "array" ), &FlatBufferBuilder::CreateVectorOfStructs<godot::PackedVector2Array> );
   // PACKED_VECTOR3_ARRAY,
-  // PACKED_COLOR_ARRAY,
+  ClassDB::bind_method( D_METHOD( "create_PackedVector3Array", "array" ), &FlatBufferBuilder::CreateVectorOfStructs<godot::PackedVector3Array> );
   // PACKED_VECTOR4_ARRAY,
+  ClassDB::bind_method( D_METHOD( "create_PackedVector4Array", "array" ), &FlatBufferBuilder::CreateVectorOfStructs<godot::PackedVector4Array> );
+  // PACKED_COLOR_ARRAY,
+  ClassDB::bind_method( D_METHOD( "create_PackedColorArray", "array" ), &FlatBufferBuilder::CreateVectorOfStructs<godot::PackedColorArray> );
 }
 
 FlatBufferBuilder::FlatBufferBuilder() {
@@ -192,8 +197,9 @@ void FlatBufferBuilder::AddOffset( const uint16_t voffset, const uint64_t value 
 
 
 void FlatBufferBuilder::AddBytes( const uint16_t voffset, const godot::PackedByteArray &bytes ) const {
-  if( bytes.is_empty() )
+  if( bytes.is_empty() ) {
     return; // Default, don't store.
+  }
   builder->Align( bytes.size() );
   builder->PushBytes( bytes.ptr(), bytes.size() );
   builder->TrackField( voffset, builder->GetSize() );
@@ -227,13 +233,6 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreatePackedStringArray( const g
   }
   const uoffset_t offset = builder->CreateVector( offsets ).o;
   return offset;
-}
-
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::
-CreatePackedVector2Array( const godot::PackedVector2Array &value ) const {
-  return 0;
-  godot::PackedVector4Array values( value );
-  values.ptrw();
 }
 
 FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateString( const godot::String &string ) const {
