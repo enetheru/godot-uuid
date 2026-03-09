@@ -149,8 +149,8 @@ public:
   // PackedColorArray
   // PackedVector4Array
   template<typename packed_type>
-  [[nodiscard]] uoffset_t CreateVectorOfStructs( const packed_type &value ) const {
-    return builder->CreateVectorOfStructs(&value, value.size() ).o;
+  [[nodiscard]] uoffset_t CreateVectorOfStructs( const packed_type &packed ) const {
+    return builder->CreateVectorOfStructs(packed.ptr(), packed.size() ).o;
   }
 
 };
