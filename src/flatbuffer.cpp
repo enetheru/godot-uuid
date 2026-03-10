@@ -99,14 +99,14 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "get_memory_address" ), &FlatBuffer::get_memory_address );
 #endif
 
-  ClassDB::bind_method( D_METHOD( "set_fb_bytes", "bytes" ), &FlatBuffer::set_bytes );
-  ClassDB::bind_method( D_METHOD( "get_fb_bytes" ), &FlatBuffer::get_bytes );
-  ADD_PROPERTY( PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_fb_bytes"), "set_fb_bytes", "get_fb_bytes" );
+  ClassDB::bind_method( D_METHOD( "set_bytes", "bytes" ), &FlatBuffer::set_bytes );
+  ClassDB::bind_method( D_METHOD( "get_bytes" ), &FlatBuffer::get_bytes );
+  ADD_PROPERTY( PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_fb_bytes"), "set_bytes", "get_bytes" );
 
   //Properties
-  ClassDB::bind_method( D_METHOD( "set_fb_start", "start" ), &FlatBuffer::set_start );
-  ClassDB::bind_method( D_METHOD( "get_fb_start" ), &FlatBuffer::get_start );
-  ADD_PROPERTY( PropertyInfo(Variant::INT, "_fb_start"), "set_fb_start", "get_fb_start" );
+  ClassDB::bind_method( D_METHOD( "set_start", "start" ), &FlatBuffer::set_start );
+  ClassDB::bind_method( D_METHOD( "get_start" ), &FlatBuffer::get_start );
+  ADD_PROPERTY( PropertyInfo(Variant::INT, "_fb_start"), "set_start", "get_start" );
 
   // Field Access Helpers
   ClassDB::bind_method( D_METHOD( "get_field_offset", "vtable_offset" ), &FlatBuffer::get_field_offset );
@@ -117,7 +117,7 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "get_array_element_start", "array_start", "idx" ), &FlatBuffer::get_array_element_start );
 
   //Overwrite Bytes
-  ClassDB::bind_method( D_METHOD( "overwrite_fb_bytes", "source", "from", "to", "size" ), &FlatBuffer::overwrite_bytes );
+  ClassDB::bind_method( D_METHOD( "overwrite_bytes", "source", "from", "to", "size" ), &FlatBuffer::overwrite_bytes );
 
   //// decode atomic types
   // BOOL, INT, FLOAT, are handled natively by godot::PackedByteArray
