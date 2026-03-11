@@ -3,9 +3,10 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 
-#include "flatbufferverifier.hpp"
 #include "flatbuffers/flatbuffers.h"
+#include "flatbufferverifier.hpp"
 #include "godot_cpp/variant/variant_internal.hpp"
+#include "utils.hpp"
 
 
 namespace godot_flatbuffers {
@@ -67,7 +68,9 @@ public:
   // Specialisations exist in the cpp file
   template< typename GType >
   auto encode_gtype( const int64_t start_, const GType &value ) -> void {
-    ERR_FAIL_INDEX_EDMSG(start_ + sizeof(GType), fb_bytes->size(), "Not enough room in the buffer to encode object");
+    ERR_FAIL_INDEX_EDMSG(start_ - 1 + sizeof(GType), fb_bytes->size(),
+      godot::vformat( "Not enough room in the buffer to encode object\n"
+        "buf(%d)[%d] !<- [%d]", fb_bytes->size(), start_, sizeof(GType) ));
     const auto mem = const_cast<godot::PackedByteArray*>(fb_bytes)->ptrw() + start_;
     memcpy( mem , &value, sizeof(GType)  );
   }
