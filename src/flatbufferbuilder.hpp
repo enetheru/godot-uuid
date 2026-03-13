@@ -123,7 +123,8 @@ public:
   // Callable
   // Signal
   // Dictionary
-  // Array
+  // Array - Array is a special case, where the contents could be a contiguous vector of struct.
+  [[nodiscard]] uoffset_t CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size);
 
   // -> Vectors
   // PackedByteArray

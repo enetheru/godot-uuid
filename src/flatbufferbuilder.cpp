@@ -3,6 +3,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "flatbuffer.hpp"
+
 /*
  * Flatbuffer Builder wrapper for gdscript
  */
@@ -145,6 +147,7 @@ void FlatBufferBuilder::_bind_methods() {
   // SIGNAL,
   // DICTIONARY,
   // ARRAY,
+  ClassDB::bind_method( D_METHOD( "create_vector_of_custom_struct", "array", "element_size" ), &FlatBufferBuilder::CreateVectorOfCustomStructs );
 
   //// typed arrays
   // PACKED_BYTE_ARRAY,
@@ -239,4 +242,26 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateString( const godot::Strin
   const auto str = string.utf8();
   return builder->CreateString( str.ptr(), str.size() ).o;
 }
+
+
+FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) {
+  const size_t num_elements = value.size();
+  uint8_t *buf;
+  const auto offset = builder->CreateUninitializedVector(
+    num_elements, elem_size, flatbuffers::AlignOf<uoffset_t>(), &buf);
+
+  // Now we have the raw buffer we can paste our objects into it.
+  // There are going to be two types of objects. the well defined godot ones, and the custom ones made from byte arrays.
+  // this should allow me to write arbitrary data into the buffer of any type. But its not very satisfying.
+  // For now I will ignore builtin ones, because they are sort of handled by the packed byte arrays.
+  // Holy shitballs it works first try.
+  for( godot::Object *v : value ) {
+    const FlatBuffer *fb = Object::cast_to<FlatBuffer>(v);
+    godot::PackedByteArray bytes = fb->get_bytes();
+    std::memcpy( buf, bytes.ptrw(), std::min(elem_size, static_cast<size_t>(bytes.size())) );
+    buf += elem_size;
+  }
+  return offset;
+}
+
 }  // namespace godot_flatbuffers
