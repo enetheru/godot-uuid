@@ -6,6 +6,8 @@
 #include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "godot_cpp/variant/variant_internal.hpp"
+
 namespace godot_flatbuffers {
 class FlatBufferBuilder final : public godot::RefCounted {
   GDCLASS( FlatBufferBuilder, RefCounted ) // NOLINT(*-use-auto)
@@ -31,109 +33,89 @@ public:
 
   explicit FlatBufferBuilder( int size );
 
-
-  [[nodiscard]] int64_t GetSize() const { return builder->GetSize(); }
-
-  [[nodiscard]] godot::PackedByteArray GetPackedByteArray() const;
-
-  void Clear() const { builder->Clear(); }
-  void Reset() const { builder->Reset(); }
-
-  void Finish( uint32_t root ) const;
-
   [[nodiscard]] uoffset_t StartTable() const { return builder->StartTable(); }
   [[nodiscard]] uoffset_t EndTable( const uoffset_t start ) const { return builder->EndTable( start ); }
 
-  // Add is used when the data is inline
-  // Create is used when the data is offset.
+  void Finish( uint32_t root ) const;
 
+  [[nodiscard]] godot::PackedByteArray GetPackedByteArray() const;
 
-  // Add Offsets
-  void AddOffset( uint16_t voffset, uint64_t value ) const;
+  [[nodiscard]] int64_t GetSize() const { return builder->GetSize(); }
 
-  // Add Arrays of bytes
-  void AddBytes( uint16_t voffset, const godot::PackedByteArray &bytes ) const;
+  void Clear() const { builder->Clear(); }
 
+  void Reset() const { builder->Reset(); }
+
+  //MARK: Create
+  // │  ___              _          [br]
+  // │ / __|_ _ ___ __ _| |_ ___    [br]
+  // │| (__| '_/ -_) _` |  _/ -_)   [br]
+  // │ \___|_| \___\__,_|\__\___|   [br]
+  // ╰───────────────────────────── [br]
+  // Create is used when the data is offset from the table or struct or vector.
 
   // Vector of offsets
-  [[nodiscard]] uoffset_t CreateVectorOffset( const godot::PackedInt32Array &array ) const;
+  [[nodiscard]] uoffset_t CreateVectorOfOffset( const godot::PackedInt32Array &array ) const;
 
   // Custom Class to Table Creators
   [[nodiscard]] uoffset_t CreateVectorTable( const godot::Array &array, const godot::Callable &constructor ) const;
 
+  // Pack a godot type to the table or struct and return its offset.
+  // structs : Vector2, Vector2i, Rect2, Rect2i, Vector3, Vector3i, Transform2D,
+  //           Vector4, Vector4i, Plane, Quaternion, AABB, Basis, Transform3D,
+  //           Projection, Color
+  // strings : String, StringName, NodePath
+  // vectors : PackedByteArray, PackedInt32Array, PackedInt64Array,
+  //           PackedFloat32Array, PackedFloat64Array, PackedVector2Array,
+  //           PackedVector3Array, PackedColorArray, PackedVector4Array
+  [[nodiscard]] uoffset_t CreateVariant(const godot::Variant &value, godot::Variant::Type variant_type ) const;
 
-  // The full range of godot types:
+  //MARK: Add
+  // │   _      _    _    [br]
+  // │  /_\  __| |__| |   [br]
+  // │ / _ \/ _` / _` |   [br]
+  // │/_/ \_\__,_\__,_|   [br]
+  // ╰─────────────────── [br]
+  // Add is used when the data is inline with the table or struct
 
-  // Add / Create Scalars
-  // Scalars
-  // bool
-  // int64_t
-  // int32_t
-  // int16_t
-  // int8_t
-  // uint64_t
-  // uint32_t
-  // uint16_t
-  // uint8_t
-  // double
-  // float
-  template< typename in, typename out >
-  void AddScalar( uint16_t voffset, in value ) { builder->AddElement< out >( voffset, value ); }
+  // Add Offsets, offset is an unsigned 32 bit value.
+  void AddOffset(const uint16_t voffset, const uint64_t value ) const { builder->AddOffset( voffset, Offset( value ) ); }
 
-  template< typename in, typename out >
-  void AddScalarDefault( uint16_t voffset, in value, in def ) { builder->AddElement< out >( voffset, value, def ); }
+  // Add Arrays of arbitrary bytes treated as a single object for alignment purposes.
+  void AddBytes( uint16_t voffset, const godot::PackedByteArray &bytes ) const;
 
+  // template used to transform godot based scalars like int, and float, to any of the c++ types.
+  // Scalars: bool, int64_t, int32_t, int16_t, int8_t, uint64_t, uint32_t, uint16_t, uint8_t, double, float
+  template< typename in, typename out, bool with_default = false >
+  std::enable_if_t< !with_default, void > AddScalar( uint16_t voffset, in value ) {
+    builder->AddElement< out >( voffset, value );
+  }
 
-  // Add / Create Structs
-  // Below are the list of godot types that are represented as structs in the flatbuffer object.
-  // Vector2
-  // Vector2i
-  // Rect2
-  // Rect2i
-  // Vector3
-  // Vector3i
-  // Transform2D
-  // Vector4
-  // Vector4i
-  // Plane
-  // Quaternion
-  // AABB
-  // Basis
-  // Transform3D
-  // Projection
-  // Color
-  template< typename godot_type >
-  void AddGodotStruct( uint16_t voffset, const godot_type &value ) { builder->AddStruct( voffset, &value ); }
+  // Same as AddScalar but with a default value
+  template< typename in, typename out, bool with_default = false >
+  std::enable_if_t< with_default, void > AddScalar( uint16_t voffset, in value, in def ) {
+    builder->AddElement< out >( voffset, value, def );
+  }
 
-  // When structs need to be added as nullable, or part of a union, such that they are accessed via an offset
-  // Then we create
-  template< typename godot_type >
-  uoffset_t CreateGodotStruct( const godot_type &value ) { return builder->CreateStruct( &value ).o; }
+  // Add a godot type to the table or struct using voffset, optionally specify
+  // which type is expected.
+  // scalars : bool, int, float
+  // structs : Vector2, Vector2i, Rect2, Rect2i, Vector3, Vector3i, Transform2D,
+  //           Vector4, Vector4i, Plane, Quaternion, AABB, Basis, Transform3D,
+  //           Projection, Color
+  void AddGodotVariant(uint16_t voffset, const godot::Variant &value, godot::Variant::Type variant_type) const;
 
+  // Unsupported: RID, Callable, Signal
 
-  // String
-  [[nodiscard]] uoffset_t CreateString( const godot::String &string ) const;
+  // Object
 
-  // StringName
-  // NodePath
-  // godot::RID
-  // ObjectID
-
-  // Object *
-  // Callable
-  // Signal
   // Dictionary
-  // Array - Array is a special case, where the contents could be a contiguous vector of struct.
-  [[nodiscard]] uoffset_t CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size);
 
-  // -> Vectors
-  // PackedByteArray
-  // PackedInt32Array
-  // PackedInt64Array
-  // PackedFloat32Array
-  // PackedFloat64Array
+  // Array - Array is a special case, where the contents could be a contiguous vector of struct.
+  [[nodiscard]] uoffset_t CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) const;
+
   template< typename T >
-  uoffset_t CreatePackedArray( const godot::Array &v ) {
+  uoffset_t CreateVectorOfScalar( const godot::Array &v ) {
     builder->StartVector< T >( v.size() );
     for( auto i = v.size(); i > 0; ) {
       builder->PushElement( static_cast< T >(v[ --i ]) );
@@ -141,14 +123,6 @@ public:
     return builder->EndVector( v.size() );
   }
 
-  // PackedStringArray <-> VectorOfString
-  [[nodiscard]] uoffset_t CreatePackedStringArray( const godot::PackedStringArray &value ) const;
-
-  // PackedArray's are fairly easy to deal with as they are contiguous containers.
-  // PackedVector2Array
-  // PackedVector3Array
-  // PackedColorArray
-  // PackedVector4Array
   template<typename packed_type>
   [[nodiscard]] uoffset_t CreateVectorOfStructs( const packed_type &packed ) const {
     return builder->CreateVectorOfStructs(packed.ptr(), packed.size() ).o;
