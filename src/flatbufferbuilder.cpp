@@ -56,7 +56,12 @@ void FlatBufferBuilder::_bind_methods() {
           &FlatBufferBuilder::CreateVectorOfCustomStructs);
 
   ClassDB::bind_method(
-          D_METHOD("create_vector_table", "array", "constructor"), &FlatBufferBuilder::CreateVectorOfTable);
+          D_METHOD("create_vector_of_table", "array", "create_func"),
+          &FlatBufferBuilder::CreateVectorOfTable);
+
+  ClassDB::bind_method(
+          D_METHOD("create_vector_of_union", "array", "create_func"),
+          &FlatBufferBuilder::CreateVectorOfUnion);
 
   // MARK: Add
   //  │   _      _    _    [br]
@@ -358,6 +363,28 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOfOffset(const godot
 
 
 FlatBufferBuilder::uoffset_t
+FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) const {
+  const size_t num_elements = value.size();
+  uint8_t     *buf;
+  const auto   offset =
+          builder->CreateUninitializedVector(num_elements, elem_size, flatbuffers::AlignOf< uoffset_t >(), &buf);
+
+  // Now we have the raw buffer we can paste our objects into it.
+  // There are going to be two types of objects. the well defined godot ones, and the custom ones made from byte arrays.
+  // this should allow me to write arbitrary data into the buffer of any type. But its not very satisfying.
+  // For now I will ignore builtin ones, because they are sort of handled by the packed byte arrays.
+  // Holy shitballs it works first try.
+  for( godot::Object *v : value ) {
+    const FlatBuffer      *fb    = Object::cast_to< FlatBuffer >(v);
+    godot::PackedByteArray bytes = fb->get_bytes();
+    std::memcpy(buf, bytes.ptrw(), std::min(elem_size, static_cast< size_t >(bytes.size())));
+    buf += elem_size;
+  }
+  return offset;
+}
+
+
+FlatBufferBuilder::uoffset_t
 FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::Callable &creator_func) const {
   // I think godot implicitly creates a reference object for the callable
   // which when unreferences cleans up the builder.
@@ -379,27 +406,38 @@ FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::C
 }
 
 
-FlatBufferBuilder::uoffset_t
-FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) const {
-  const size_t num_elements = value.size();
-  uint8_t     *buf;
-  const auto   offset =
-          builder->CreateUninitializedVector(num_elements, elem_size, flatbuffers::AlignOf< uoffset_t >(), &buf);
+// takes an array and a callable to pack and generate the offsets to the unions.
+godot::PackedInt32Array
+FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::Callable &creator_func) const {
+  godot::PackedInt32Array ret{0,0};
+  // TODO tes the callable before proceeding to make sure it takes two arguments,
+  // and returns a packed int32 array.
 
-  // Now we have the raw buffer we can paste our objects into it.
-  // There are going to be two types of objects. the well defined godot ones, and the custom ones made from byte arrays.
-  // this should allow me to write arbitrary data into the buffer of any type. But its not very satisfying.
-  // For now I will ignore builtin ones, because they are sort of handled by the packed byte arrays.
-  // Holy shitballs it works first try.
-  for( godot::Object *v : value ) {
-    const FlatBuffer      *fb    = Object::cast_to< FlatBuffer >(v);
-    godot::PackedByteArray bytes = fb->get_bytes();
-    std::memcpy(buf, bytes.ptrw(), std::min(elem_size, static_cast< size_t >(bytes.size())));
-    buf += elem_size;
+  // I think godot implicitly creates a reference object for the callable
+  // which when unreferences cleans up the builder.
+  const auto bref = godot::Ref< FlatBufferBuilder >(this);
+  bref->reference(); // +1 to refcount so we dont trigger a cleanup
+
+  std::vector< uint32_t > value_offsets(array.size());
+  std::vector< uint8_t > type_offsets(array.size());
+  // FIXME, union value type may be different than uint8_t
+
+  for( int i = 0; i < array.size(); ++i ) {
+    godot::PackedInt32Array func_ret = creator_func.call(bref, array[ i ]);
+    value_offsets[i] = func_ret[0];
+    type_offsets[i] = func_ret[1];
   }
-  return offset;
-}
 
+  // add the vector of table offsets to the builder and return its offset.
+  builder->StartVector< Offset >(value_offsets.size());
+  for( auto i = array.size(); i > 0; ) {
+    builder->PushElement(static_cast< Offset >(value_offsets[ --i ]));
+  }
+  ret[0] = builder->EndVector(array.size());
+
+  ret[1] = builder->CreateVector(type_offsets).o;
+  return ret;
+}
 
 // == Add Functions ==
 void FlatBufferBuilder::AddBytes(const uint16_t voffset, const godot::PackedByteArray &bytes) const {
@@ -563,6 +601,93 @@ void FlatBufferBuilder::AddGodotVariant(
     default: {
       ERR_FAIL_MSG("This should be impossible.");
     }
+  }
+}
+
+void tmp() {
+  godot::Variant::Type t;
+  switch(t) {
+
+    case godot::Variant::NIL:
+      break;
+    case godot::Variant::BOOL:
+      break;
+    case godot::Variant::INT:
+      break;
+    case godot::Variant::FLOAT:
+      break;
+    case godot::Variant::STRING:
+      break;
+    case godot::Variant::VECTOR2:
+      break;
+    case godot::Variant::VECTOR2I:
+      break;
+    case godot::Variant::RECT2:
+      break;
+    case godot::Variant::RECT2I:
+      break;
+    case godot::Variant::VECTOR3:
+      break;
+    case godot::Variant::VECTOR3I:
+      break;
+    case godot::Variant::TRANSFORM2D:
+      break;
+    case godot::Variant::VECTOR4:
+      break;
+    case godot::Variant::VECTOR4I:
+      break;
+    case godot::Variant::PLANE:
+      break;
+    case godot::Variant::QUATERNION:
+      break;
+    case godot::Variant::AABB:
+      break;
+    case godot::Variant::BASIS:
+      break;
+    case godot::Variant::TRANSFORM3D:
+      break;
+    case godot::Variant::PROJECTION:
+      break;
+    case godot::Variant::COLOR:
+      break;
+    case godot::Variant::STRING_NAME:
+      break;
+    case godot::Variant::NODE_PATH:
+      break;
+    case godot::Variant::RID:
+      break;
+    case godot::Variant::OBJECT:
+      break;
+    case godot::Variant::CALLABLE:
+      break;
+    case godot::Variant::SIGNAL:
+      break;
+    case godot::Variant::DICTIONARY:
+      break;
+    case godot::Variant::ARRAY:
+      break;
+    case godot::Variant::PACKED_BYTE_ARRAY:
+      break;
+    case godot::Variant::PACKED_INT32_ARRAY:
+      break;
+    case godot::Variant::PACKED_INT64_ARRAY:
+      break;
+    case godot::Variant::PACKED_FLOAT32_ARRAY:
+      break;
+    case godot::Variant::PACKED_FLOAT64_ARRAY:
+      break;
+    case godot::Variant::PACKED_STRING_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR2_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR3_ARRAY:
+      break;
+    case godot::Variant::PACKED_COLOR_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR4_ARRAY:
+      break;
+    case godot::Variant::VARIANT_MAX:
+      break;
   }
 }
 
