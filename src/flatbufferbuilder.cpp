@@ -3,6 +3,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "flatbuffer.hpp"
+#include "utils.hpp"
 
 /*
  * Flatbuffer Builder wrapper for gdscript
@@ -21,9 +22,54 @@ void FlatBufferBuilder::_bind_methods() {
   ClassDB::bind_method(D_METHOD("start_table"), &FlatBufferBuilder::StartTable);
   ClassDB::bind_method(D_METHOD("end_table", "start"), &FlatBufferBuilder::EndTable);
   ClassDB::bind_method(D_METHOD("get_size"), &FlatBufferBuilder::GetSize);
-  ClassDB::bind_method(D_METHOD("to_packed_byte_array"), &FlatBufferBuilder::GetPackedByteArray);
+  ClassDB::bind_method(D_METHOD("get_buffer"), &FlatBufferBuilder::GetPackedByteArray);
 
-  // == Add functions ==
+  //MARK: Create
+  // │  ___              _          [br]
+  // │ / __|_ _ ___ __ _| |_ ___    [br]
+  // │| (__| '_/ -_) _` |  _/ -_)   [br]
+  // │ \___|_| \___\__,_|\__\___|   [br]
+  // ╰───────────────────────────── [br]
+  // Create is used when the data is offset from the table or struct or vector.
+
+  ClassDB::bind_method(
+      D_METHOD("create_variant", "value", "type"),
+      &FlatBufferBuilder::CreateVariant,
+      godot::Variant::Type::VARIANT_MAX);
+
+  // == Create Vectors of Offset(uint32_t) ==
+  ClassDB::bind_method(D_METHOD("create_vector_offset", "array"), &FlatBufferBuilder::CreateVectorOfOffset);
+
+  // == Create Vectors of Scalars ==
+  ClassDB::bind_method(D_METHOD("create_vector_int8", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int8_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint8", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint8_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_int16", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int16_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint16", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint16_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_int32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int32_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint32_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_int64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int64_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint64_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_float32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< float >);
+  ClassDB::bind_method(D_METHOD("create_vector_float64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< double >);
+
+
+  ClassDB::bind_method(
+      D_METHOD("create_vector_of_custom_struct", "array", "element_size"),
+      &FlatBufferBuilder::CreateVectorOfCustomStructs);
+
+  ClassDB::bind_method(
+    D_METHOD("create_vector_table", "array", "constructor"),
+    &FlatBufferBuilder::CreateVectorOfTable);
+
+  //MARK: Add
+  // │   _      _    _    [br]
+  // │  /_\  __| |__| |   [br]
+  // │ / _ \/ _` / _` |   [br]
+  // │/_/ \_\__,_\__,_|   [br]
+  // ╰─────────────────── [br]
+  // Add is used when the data is inline with the table or struct
+
+    // == Add functions ==
   ClassDB::bind_method(D_METHOD("add_offset", "voffset", "value"), &FlatBufferBuilder::AddOffset);
   ClassDB::bind_method(D_METHOD("add_bytes", "voffset", "value"), &FlatBufferBuilder::AddBytes);
 
@@ -84,41 +130,12 @@ void FlatBufferBuilder::_bind_methods() {
           D_METHOD("add_element_double_default", "voffset", "value", "default"),
           &FlatBufferBuilder::AddScalar< double, double, true >);
 
-  // == Create Functions ==
-
-  ClassDB::bind_method(D_METHOD("create_vector_offset", "array"), &FlatBufferBuilder::CreateVectorOfOffset);
-  ClassDB::bind_method(D_METHOD("create_vector_table", "array", "constructor"), &FlatBufferBuilder::CreateVectorTable);
-
-  ClassDB::bind_method(D_METHOD("create_vector_int8", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int8_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_uint8", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint8_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_int16", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int16_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_uint16", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint16_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_int32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int32_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_uint32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint32_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_int64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int64_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_uint64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint64_t >);
-  ClassDB::bind_method(D_METHOD("create_vector_float32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< float >);
-  ClassDB::bind_method(D_METHOD("create_vector_float64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< double >);
-
   // Convenience functo to add or create godot type's
   ClassDB::bind_method(
       D_METHOD("add_variant", "voffset", "value", "type"),
       &FlatBufferBuilder::AddGodotVariant,
       godot::Variant::Type::VARIANT_MAX);
 
-  ClassDB::bind_method(
-      D_METHOD("create_variant", "value", "type"),
-      &FlatBufferBuilder::CreateVariant,
-      godot::Variant::Type::VARIANT_MAX);
-
-  //// unsupported types
-  // RID, CALLABLE, SIGNAL, DICTIONARY,
-
-  // OBJECT,
-  // ARRAY,
-  ClassDB::bind_method(
-          D_METHOD("create_vector_of_custom_struct", "array", "element_size"),
-          &FlatBufferBuilder::CreateVectorOfCustomStructs);
 }
 
 FlatBufferBuilder::FlatBufferBuilder() { builder = std::make_unique< flatbuffers::FlatBufferBuilder >(); }
@@ -147,17 +164,30 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOfOffset(const godot
   return builder->EndVector(array.size());
 }
 
+
 FlatBufferBuilder::uoffset_t
-FlatBufferBuilder::CreateVectorTable(
+FlatBufferBuilder::CreateVectorOfTable(
       const godot::Array &array,
-      const godot::Callable &constructor) const {
-  builder->StartVector< Offset >(array.size());
+      const godot::Callable &creator_func) const {
+  // I think godot implicitly creates a reference object for the callable
+  // which when unreferences cleans up the builder.
+  const auto bref = godot::Ref<FlatBufferBuilder>(this);
+  // reference starts at 1, so when this function completes it triggers a
+  // cleanup unless i prevent it by adding at least one for the initial
+  // reference.
+  bref->reference();
+  std::vector< uint32_t > offsets(array.size());
+  for( int i = 0; i < array.size(); ++i ) {
+    offsets[ i ] = creator_func.call( bref, array[ i ] );
+  }
+  //add the vector of table offsets to the builder and return its offset.
+  builder->StartVector< Offset >(offsets.size());
   for( auto i = array.size(); i > 0; ) {
-    uoffset_t offset = constructor.call(array[ --i ]);
-    builder->PushElement(static_cast< Offset >(offset));
+    builder->PushElement(static_cast< Offset >(offsets[ --i ]));
   }
   return builder->EndVector(array.size());
 }
+
 
 FlatBufferBuilder::uoffset_t
 FlatBufferBuilder::CreateVariant(

@@ -104,6 +104,8 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "get_memory_address" ), &FlatBuffer::get_memory_address );
 #endif
 
+  // TODO implement a static function get_root(Script, buffer) -> Object
+
   ClassDB::bind_method( D_METHOD( "set_bytes", "bytes" ), &FlatBuffer::set_bytes );
   ClassDB::bind_method( D_METHOD( "get_bytes" ), &FlatBuffer::get_bytes );
   ADD_PROPERTY( PropertyInfo(godot::Variant::PACKED_BYTE_ARRAY, "_fb_bytes"), "set_bytes", "get_bytes" );

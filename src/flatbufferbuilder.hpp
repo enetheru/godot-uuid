@@ -58,7 +58,7 @@ public:
   [[nodiscard]] uoffset_t CreateVectorOfOffset( const godot::PackedInt32Array &array ) const;
 
   // Custom Class to Table Creators
-  [[nodiscard]] uoffset_t CreateVectorTable( const godot::Array &array, const godot::Callable &constructor ) const;
+  [[nodiscard]] uoffset_t CreateVectorOfTable( const godot::Array &array, const godot::Callable &creator_func ) const;
 
   // Pack a godot type to the table or struct and return its offset.
   // structs : Vector2, Vector2i, Rect2, Rect2i, Vector3, Vector3i, Transform2D,
