@@ -3,7 +3,6 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "flatbuffer.hpp"
-#include "utils.hpp"
 
 /*
  * Flatbuffer Builder wrapper for gdscript
@@ -24,18 +23,17 @@ void FlatBufferBuilder::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_size"), &FlatBufferBuilder::GetSize);
   ClassDB::bind_method(D_METHOD("get_buffer"), &FlatBufferBuilder::GetPackedByteArray);
 
-  //MARK: Create
-  // │  ___              _          [br]
-  // │ / __|_ _ ___ __ _| |_ ___    [br]
-  // │| (__| '_/ -_) _` |  _/ -_)   [br]
-  // │ \___|_| \___\__,_|\__\___|   [br]
-  // ╰───────────────────────────── [br]
-  // Create is used when the data is offset from the table or struct or vector.
+  // MARK: Create
+  //  │  ___              _          [br]
+  //  │ / __|_ _ ___ __ _| |_ ___    [br]
+  //  │| (__| '_/ -_) _` |  _/ -_)   [br]
+  //  │ \___|_| \___\__,_|\__\___|   [br]
+  //  ╰───────────────────────────── [br]
+  //  Create is used when the data is offset from the table or struct or vector.
 
   ClassDB::bind_method(
-      D_METHOD("create_variant", "value", "type"),
-      &FlatBufferBuilder::CreateVariant,
-      godot::Variant::Type::VARIANT_MAX);
+          D_METHOD("create_variant", "value", "type"), &FlatBufferBuilder::CreateVariant,
+          godot::Variant::Type::VARIANT_MAX);
 
   // == Create Vectors of Offset(uint32_t) ==
   ClassDB::bind_method(D_METHOD("create_vector_offset", "array"), &FlatBufferBuilder::CreateVectorOfOffset);
@@ -54,22 +52,21 @@ void FlatBufferBuilder::_bind_methods() {
 
 
   ClassDB::bind_method(
-      D_METHOD("create_vector_of_custom_struct", "array", "element_size"),
-      &FlatBufferBuilder::CreateVectorOfCustomStructs);
+          D_METHOD("create_vector_of_custom_struct", "array", "element_size"),
+          &FlatBufferBuilder::CreateVectorOfCustomStructs);
 
   ClassDB::bind_method(
-    D_METHOD("create_vector_table", "array", "constructor"),
-    &FlatBufferBuilder::CreateVectorOfTable);
+          D_METHOD("create_vector_table", "array", "constructor"), &FlatBufferBuilder::CreateVectorOfTable);
 
-  //MARK: Add
-  // │   _      _    _    [br]
-  // │  /_\  __| |__| |   [br]
-  // │ / _ \/ _` / _` |   [br]
-  // │/_/ \_\__,_\__,_|   [br]
-  // ╰─────────────────── [br]
-  // Add is used when the data is inline with the table or struct
+  // MARK: Add
+  //  │   _      _    _    [br]
+  //  │  /_\  __| |__| |   [br]
+  //  │ / _ \/ _` / _` |   [br]
+  //  │/_/ \_\__,_\__,_|   [br]
+  //  ╰─────────────────── [br]
+  //  Add is used when the data is inline with the table or struct
 
-    // == Add functions ==
+  // == Add functions ==
   ClassDB::bind_method(D_METHOD("add_offset", "voffset", "value"), &FlatBufferBuilder::AddOffset);
   ClassDB::bind_method(D_METHOD("add_bytes", "voffset", "value"), &FlatBufferBuilder::AddBytes);
 
@@ -132,10 +129,8 @@ void FlatBufferBuilder::_bind_methods() {
 
   // Convenience functo to add or create godot type's
   ClassDB::bind_method(
-      D_METHOD("add_variant", "voffset", "value", "type"),
-      &FlatBufferBuilder::AddGodotVariant,
-      godot::Variant::Type::VARIANT_MAX);
-
+          D_METHOD("add_variant", "voffset", "value", "type"), &FlatBufferBuilder::AddGodotVariant,
+          godot::Variant::Type::VARIANT_MAX);
 }
 
 FlatBufferBuilder::FlatBufferBuilder() { builder = std::make_unique< flatbuffers::FlatBufferBuilder >(); }
@@ -155,50 +150,13 @@ godot::PackedByteArray FlatBufferBuilder::GetPackedByteArray() const {
   return bytes;
 }
 
-// == Create Functions
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOfOffset(const godot::PackedInt32Array &array) const {
-  builder->StartVector< Offset >(array.size());
-  for( auto i = array.size(); i > 0; ) {
-    builder->PushElement(static_cast< Offset >(array[ --i ]));
-  }
-  return builder->EndVector(array.size());
-}
-
-
-FlatBufferBuilder::uoffset_t
-FlatBufferBuilder::CreateVectorOfTable(
-      const godot::Array &array,
-      const godot::Callable &creator_func) const {
-  // I think godot implicitly creates a reference object for the callable
-  // which when unreferences cleans up the builder.
-  const auto bref = godot::Ref<FlatBufferBuilder>(this);
-  // reference starts at 1, so when this function completes it triggers a
-  // cleanup unless i prevent it by adding at least one for the initial
-  // reference.
-  bref->reference();
-  std::vector< uint32_t > offsets(array.size());
-  for( int i = 0; i < array.size(); ++i ) {
-    offsets[ i ] = creator_func.call( bref, array[ i ] );
-  }
-  //add the vector of table offsets to the builder and return its offset.
-  builder->StartVector< Offset >(offsets.size());
-  for( auto i = array.size(); i > 0; ) {
-    builder->PushElement(static_cast< Offset >(offsets[ --i ]));
-  }
-  return builder->EndVector(array.size());
-}
-
-
-FlatBufferBuilder::uoffset_t
-FlatBufferBuilder::CreateVariant(
-      const godot::Variant &value,
-      godot::Variant::Type variant_type = godot::Variant::Type::VARIANT_MAX) const {
+FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVariant(
+        const godot::Variant &value, godot::Variant::Type variant_type = godot::Variant::Type::VARIANT_MAX) const {
 
   if( variant_type == godot::Variant::Type::VARIANT_MAX ) {
     variant_type = value.get_type();
   } else {
-    ERR_FAIL_COND_V_MSG(0, variant_type != value.get_type(),
-      "given type does not match expected type");
+    ERR_FAIL_COND_V_MSG(0, variant_type != value.get_type(), "given type does not match expected type");
   }
 
   switch( variant_type ) {
@@ -206,18 +164,18 @@ FlatBufferBuilder::CreateVariant(
       break;
     case godot::Variant::BOOL: {
       ERR_FAIL_V_MSG(
-        0, "Invalid type(bool) given as value. Only structs, tables, and vector"
-        " are allowed. You probably want to use add_variant instead.");
+              0, "Invalid type(bool) given as value. Only structs, tables, and vector"
+                 " are allowed. You probably want to use add_variant instead.");
     }
     case godot::Variant::INT: {
       ERR_FAIL_V_MSG(
-        0, "Invalid type(int) given as value. Only structs, tables, and vector"
-        " are allowed. You probably want to use add_variant instead.");
+              0, "Invalid type(int) given as value. Only structs, tables, and vector"
+                 " are allowed. You probably want to use add_variant instead.");
     }
     case godot::Variant::FLOAT: {
       ERR_FAIL_V_MSG(
-        0, "Invalid type(float) given as value. Only structs, tables, and"
-        " vector are allowed. You probably want to use add_variant instead.");
+              0, "Invalid type(float) given as value. Only structs, tables, and"
+                 " vector are allowed. You probably want to use add_variant instead.");
     }
     case godot::Variant::STRING: {
       const auto v   = static_cast< godot::String >(value);
@@ -389,6 +347,60 @@ FlatBufferBuilder::CreateVariant(
 }
 
 
+// == Create Functions
+FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOfOffset(const godot::PackedInt32Array &array) const {
+  builder->StartVector< Offset >(array.size());
+  for( auto i = array.size(); i > 0; ) {
+    builder->PushElement(static_cast< Offset >(array[ --i ]));
+  }
+  return builder->EndVector(array.size());
+}
+
+
+FlatBufferBuilder::uoffset_t
+FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::Callable &creator_func) const {
+  // I think godot implicitly creates a reference object for the callable
+  // which when unreferences cleans up the builder.
+  const auto bref = godot::Ref< FlatBufferBuilder >(this);
+  // reference starts at 1, so when this function completes it triggers a
+  // cleanup unless i prevent it by adding at least one for the initial
+  // reference.
+  bref->reference();
+  std::vector< uint32_t > offsets(array.size());
+  for( int i = 0; i < array.size(); ++i ) {
+    offsets[ i ] = creator_func.call(bref, array[ i ]);
+  }
+  // add the vector of table offsets to the builder and return its offset.
+  builder->StartVector< Offset >(offsets.size());
+  for( auto i = array.size(); i > 0; ) {
+    builder->PushElement(static_cast< Offset >(offsets[ --i ]));
+  }
+  return builder->EndVector(array.size());
+}
+
+
+FlatBufferBuilder::uoffset_t
+FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) const {
+  const size_t num_elements = value.size();
+  uint8_t     *buf;
+  const auto   offset =
+          builder->CreateUninitializedVector(num_elements, elem_size, flatbuffers::AlignOf< uoffset_t >(), &buf);
+
+  // Now we have the raw buffer we can paste our objects into it.
+  // There are going to be two types of objects. the well defined godot ones, and the custom ones made from byte arrays.
+  // this should allow me to write arbitrary data into the buffer of any type. But its not very satisfying.
+  // For now I will ignore builtin ones, because they are sort of handled by the packed byte arrays.
+  // Holy shitballs it works first try.
+  for( godot::Object *v : value ) {
+    const FlatBuffer      *fb    = Object::cast_to< FlatBuffer >(v);
+    godot::PackedByteArray bytes = fb->get_bytes();
+    std::memcpy(buf, bytes.ptrw(), std::min(elem_size, static_cast< size_t >(bytes.size())));
+    buf += elem_size;
+  }
+  return offset;
+}
+
+
 // == Add Functions ==
 void FlatBufferBuilder::AddBytes(const uint16_t voffset, const godot::PackedByteArray &bytes) const {
   if( bytes.is_empty() ) {
@@ -552,28 +564,6 @@ void FlatBufferBuilder::AddGodotVariant(
       ERR_FAIL_MSG("This should be impossible.");
     }
   }
-}
-
-
-FlatBufferBuilder::uoffset_t
-FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) const {
-  const size_t num_elements = value.size();
-  uint8_t     *buf;
-  const auto   offset =
-          builder->CreateUninitializedVector(num_elements, elem_size, flatbuffers::AlignOf< uoffset_t >(), &buf);
-
-  // Now we have the raw buffer we can paste our objects into it.
-  // There are going to be two types of objects. the well defined godot ones, and the custom ones made from byte arrays.
-  // this should allow me to write arbitrary data into the buffer of any type. But its not very satisfying.
-  // For now I will ignore builtin ones, because they are sort of handled by the packed byte arrays.
-  // Holy shitballs it works first try.
-  for( godot::Object *v : value ) {
-    const FlatBuffer      *fb    = Object::cast_to< FlatBuffer >(v);
-    godot::PackedByteArray bytes = fb->get_bytes();
-    std::memcpy(buf, bytes.ptrw(), std::min(elem_size, static_cast< size_t >(bytes.size())));
-    buf += elem_size;
-  }
-  return offset;
 }
 
 }  // namespace godot_flatbuffers

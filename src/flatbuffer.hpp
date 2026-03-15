@@ -38,23 +38,18 @@ public:
 #endif
 
   // Get and Set of properties
-  [[nodiscard]]
-  auto get_bytes() const -> godot::Variant {
-    return variant;
-  }
+  [[nodiscard]] auto get_bytes() const -> godot::Variant { return variant; }
   auto set_bytes(const godot::Variant &new_var) -> void {
     fb_bytes      = godot::VariantInternal::get_byte_array(&new_var);
     this->variant = new_var;
   }
 
-  [[nodiscard]]
-  auto get_start() const -> int64_t {
-    return fb_start;
-  }
+  [[nodiscard]] auto get_start() const -> int64_t { return fb_start; }
   auto set_start(const int64_t start_) -> void { fb_start = start_; }
 
 
   auto overwrite_bytes(godot::Variant source, int from, int dest, int size) const -> godot::Error;
+
 
   // MARK: Encode
   //  │ ___                 _        [br]
@@ -144,7 +139,7 @@ public:
 
   // This gets the field offset for any of the functions below it, or 0
   // if the field was not present.
-  voffset_t get_optional_field_offset(const voffset_t vtable_pos) const;
+  [[nodiscard]] voffset_t get_optional_field_offset(const voffset_t vtable_pos) const;
 
 
   [[nodiscard]] int64_t get_inline_field_start(int64_t vtable_pos) const;
