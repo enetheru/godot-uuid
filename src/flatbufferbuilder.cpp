@@ -386,16 +386,9 @@ FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const 
 
 FlatBufferBuilder::uoffset_t
 FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::Callable &creator_func) const {
-  // I think godot implicitly creates a reference object for the callable
-  // which when unreferences cleans up the builder.
-  const auto bref = godot::Ref< FlatBufferBuilder >(this);
-  // reference starts at 1, so when this function completes it triggers a
-  // cleanup unless i prevent it by adding at least one for the initial
-  // reference.
-  bref->reference();
   std::vector< uint32_t > offsets(array.size());
   for( int i = 0; i < array.size(); ++i ) {
-    offsets[ i ] = creator_func.call(bref, array[ i ]);
+    offsets[ i ] = creator_func.call(this, array[ i ]);
   }
   // add the vector of table offsets to the builder and return its offset.
   builder->StartVector< Offset >(offsets.size());
@@ -413,17 +406,12 @@ FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::C
   // TODO tes the callable before proceeding to make sure it takes two arguments,
   // and returns a packed int32 array.
 
-  // I think godot implicitly creates a reference object for the callable
-  // which when unreferences cleans up the builder.
-  const auto bref = godot::Ref< FlatBufferBuilder >(this);
-  bref->reference(); // +1 to refcount so we dont trigger a cleanup
-
   std::vector< uint32_t > value_offsets(array.size());
   std::vector< uint8_t > type_offsets(array.size());
   // FIXME, union value type may be different than uint8_t
 
   for( int i = 0; i < array.size(); ++i ) {
-    godot::PackedInt32Array func_ret = creator_func.call(bref, array[ i ]);
+    godot::PackedInt32Array func_ret = creator_func.call(this, array[ i ]);
     value_offsets[i] = func_ret[0];
     type_offsets[i] = func_ret[1];
   }
@@ -601,93 +589,6 @@ void FlatBufferBuilder::AddGodotVariant(
     default: {
       ERR_FAIL_MSG("This should be impossible.");
     }
-  }
-}
-
-void tmp() {
-  godot::Variant::Type t;
-  switch(t) {
-
-    case godot::Variant::NIL:
-      break;
-    case godot::Variant::BOOL:
-      break;
-    case godot::Variant::INT:
-      break;
-    case godot::Variant::FLOAT:
-      break;
-    case godot::Variant::STRING:
-      break;
-    case godot::Variant::VECTOR2:
-      break;
-    case godot::Variant::VECTOR2I:
-      break;
-    case godot::Variant::RECT2:
-      break;
-    case godot::Variant::RECT2I:
-      break;
-    case godot::Variant::VECTOR3:
-      break;
-    case godot::Variant::VECTOR3I:
-      break;
-    case godot::Variant::TRANSFORM2D:
-      break;
-    case godot::Variant::VECTOR4:
-      break;
-    case godot::Variant::VECTOR4I:
-      break;
-    case godot::Variant::PLANE:
-      break;
-    case godot::Variant::QUATERNION:
-      break;
-    case godot::Variant::AABB:
-      break;
-    case godot::Variant::BASIS:
-      break;
-    case godot::Variant::TRANSFORM3D:
-      break;
-    case godot::Variant::PROJECTION:
-      break;
-    case godot::Variant::COLOR:
-      break;
-    case godot::Variant::STRING_NAME:
-      break;
-    case godot::Variant::NODE_PATH:
-      break;
-    case godot::Variant::RID:
-      break;
-    case godot::Variant::OBJECT:
-      break;
-    case godot::Variant::CALLABLE:
-      break;
-    case godot::Variant::SIGNAL:
-      break;
-    case godot::Variant::DICTIONARY:
-      break;
-    case godot::Variant::ARRAY:
-      break;
-    case godot::Variant::PACKED_BYTE_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_STRING_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR2_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR3_ARRAY:
-      break;
-    case godot::Variant::PACKED_COLOR_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR4_ARRAY:
-      break;
-    case godot::Variant::VARIANT_MAX:
-      break;
   }
 }
 

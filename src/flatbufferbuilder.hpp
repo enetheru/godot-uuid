@@ -18,11 +18,9 @@ class FlatBufferBuilder final : public godot::RefCounted {
   using Offset    = flatbuffers::Offset< >;
 
 protected:
-  static FlatBufferBuilder *Create( int size ) {
-    const auto fbb = memnew( FlatBufferBuilder( size ) );
+  static godot::Ref<FlatBufferBuilder> Create( int size ) {
+    const auto fbb = godot::Ref(memnew( FlatBufferBuilder(size)));
     fbb->builder   = std::make_unique< flatbuffers::FlatBufferBuilder >( size );
-    // TODO Use this 'flatbuffers::FlatBufferBuilderImpl(...)' to add a custom allocator so that we can create directly into a PackedByteArray
-    //  This will make the need to copy the data after construction unnecessary
     return fbb;
   }
 
