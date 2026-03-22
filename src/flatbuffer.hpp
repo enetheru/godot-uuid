@@ -16,6 +16,9 @@ class FlatBuffer final : public godot::RefCounted {
   typedef uint16_t voffset_t;
   typedef uint32_t uoffset_t;
 
+  // we re-interpret the raw bytes as a table to access functions.
+  const flatbuffers::Table *table;
+
   // This is actually a PackedByteArray, but because of gdextension
   // we need to keep our data as a Variant to avoid value copies.
   godot::Variant variant;
@@ -41,11 +44,18 @@ public:
   [[nodiscard]] auto get_bytes() const -> godot::Variant { return variant; }
   auto set_bytes(const godot::Variant &new_var) -> void {
     fb_bytes      = godot::VariantInternal::get_byte_array(&new_var);
-    this->variant = new_var;
+    variant = new_var;
   }
 
   [[nodiscard]] auto get_start() const -> int64_t { return fb_start; }
   auto set_start(const int64_t start_) -> void { fb_start = start_; }
+
+  void assign_buffer( const godot::Variant &new_var, const int64_t offset) {
+    variant = new_var;
+    fb_bytes      = godot::VariantInternal::get_byte_array(&new_var);
+    fb_start = offset;
+    table = reinterpret_cast<const flatbuffers::Table *>( fb_bytes->ptr() + fb_start);
+  }
 
 
   auto overwrite_bytes(godot::Variant source, int from, int dest, int size) const -> godot::Error;
@@ -107,20 +117,56 @@ public:
   //  │  \_/\___|_| |_|_| |_\__\__,_|\__|_\___/_||_|
   //  ╰───────────────────────────────────────────────
 
-  // Verify the vtable of this table.
-  // Call this once per table, followed by VerifyField once per field.
+  /// Verify the vtable of this table.
+  /// Call this once per table, followed by VerifyField once per field.
   bool verify_table_start(const FlatBufferVerifier *verifier) const {
-    return verifier->verify_table_start(fb_bytes->ptr() + fb_start);
+    const auto v = verifier->getVerifier();
+    return v->VerifyTableStart(fb_bytes->ptr() + fb_start);
   }
 
+  bool verify_end_table(const FlatBufferVerifier *verifier) const {
+    const auto v = verifier->getVerifier();
+    return v->EndTable();
+  }
 
+  /// Verify a particular field.
   template< typename T >
   bool verify_field(const FlatBufferVerifier *verifier, const voffset_t field, const size_t align) const {
-    // Calling GetOptionalFieldOffset should be safe now thanks to VerifyTable().
-    const auto field_offset = get_optional_field_offset(field);
-
-    return ! field_offset || verifier->verify_field< T >(fb_bytes->ptr() + fb_start, field_offset, align);
+    const auto v = verifier->getVerifier();
+    return table->VerifyField<T>(*v, field, align );
   }
+
+  bool verify_variant(const FlatBufferVerifier *verifier, voffset_t field, godot::Variant::Type type) const;
+
+  /// VerifyField for required fields.
+  // template <typename T, bool B>
+  // bool VerifyFieldRequired(const VerifierTemplate<B>& verifier, voffset_t field, size_t align);
+
+  /// Versions for offsets.
+  bool verify_offset(const FlatBufferVerifier *verifier, const voffset_t field) const {
+    const auto v = verifier->getVerifier();
+    return table->VerifyOffset(*v, field);
+  }
+
+  // template <typename OffsetT = uoffset_t, bool B = false>
+  // bool VerifyOffsetRequired(const VerifierTemplate<B>& verifier, voffset_t field);
+
+  /// Verify a string that may have a default value.
+  bool verify_string(const FlatBufferVerifier *verifier, const voffset_t field) const {
+    const auto v = verifier->getVerifier();
+    return table->VerifyStringWithDefault(*v, field);
+  }
+
+  /// Verify a vector that has a default empty value.
+  template <typename P>
+  bool verify_vector(const FlatBufferVerifier *verifier, const voffset_t field) const {
+    const auto v = verifier->getVerifier();
+    return table->VerifyVectorWithDefault<P>(*v, field );
+  }
+
+  bool verify_vector_of_variant(const FlatBufferVerifier *verifier, voffset_t field, godot::Variant::Type type) const;
+
+
 
   // MARK: Get
   //  │  ___     _      [br]
@@ -130,17 +176,8 @@ public:
   //  ╰──────────────── [br]
   //   Get By-Line
 
-  const uint8_t *get_vtable() const {
-    return fb_bytes->ptr() + fb_start - flatbuffers::ReadScalar< soffset_t >(fb_bytes->ptr() + fb_start);
-  }
-
   // Field offset and position
   [[nodiscard]] int64_t get_field_offset(int64_t vtable_pos) const;
-
-  // This gets the field offset for any of the functions below it, or 0
-  // if the field was not present.
-  [[nodiscard]] voffset_t get_optional_field_offset(const voffset_t vtable_pos) const;
-
 
   [[nodiscard]] int64_t get_inline_field_start(int64_t vtable_pos) const;
   [[nodiscard]] int64_t get_offset_field_start(int64_t vtable_pos) const;
@@ -153,16 +190,6 @@ public:
   [[nodiscard]] int64_t get_array_size(int64_t vtable_offset) const;
 
   [[nodiscard]] int64_t get_array_element_start(int64_t array_start, int64_t idx) const;
-
-
-  // VerifyFieldRequired
-  // VerifyOffset
-  // VerifyOffsetRequired
-  // VerifyOffset64
-  // VerifyOffset64Required
-  // VerifyStringWithDefault
-  // VerifyVectorWithDefault
-  // VerifyVector64WithDefault
 };
 } // namespace godot_flatbuffers
 

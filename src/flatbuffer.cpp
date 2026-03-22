@@ -80,7 +80,7 @@ auto decode_packed_struct( const godot::PackedByteArray *bytes, const int64_t st
   C packed_array;
   packed_array.resize(num_elements);
   const uint8_t *src_ptr = bytes->ptr() + data_start;
-  uint8_t *dest_ptr = reinterpret_cast<uint8_t *>(packed_array.ptrw());
+  const auto     dest_ptr = reinterpret_cast<uint8_t *>(packed_array.ptrw());
   memcpy(dest_ptr, src_ptr, num_elements * element_size);
 
   return packed_array;
@@ -163,6 +163,7 @@ void FlatBuffer::_bind_methods() {
 #endif
 
   // TODO implement a static function get_root(Script, buffer) -> Object
+  ClassDB::bind_method( D_METHOD( "assign_buffer", "bytes", "offset" ), &FlatBuffer::assign_buffer );
 
   ClassDB::bind_method( D_METHOD( "set_bytes", "bytes" ), &FlatBuffer::set_bytes );
   ClassDB::bind_method( D_METHOD( "get_bytes" ), &FlatBuffer::get_bytes );
@@ -200,6 +201,7 @@ void FlatBuffer::_bind_methods() {
 
   //MARK: Verification Bindings
   ClassDB::bind_method( D_METHOD( "verify_table_start", "verifier" ), &FlatBuffer::verify_table_start );
+  ClassDB::bind_method( D_METHOD( "verify_end_table", "verifier" ), &FlatBuffer::verify_end_table );
 
   // field verifiers
   ClassDB::bind_method( D_METHOD( "verify_field_u8", "verifier", "field", "align" ), &FlatBuffer::verify_field<uint8_t> );
@@ -212,6 +214,15 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "verify_field_s64", "verifier", "field", "align" ), &FlatBuffer::verify_field<int64_t> );
   ClassDB::bind_method( D_METHOD( "verify_field_float", "verifier", "field", "align" ), &FlatBuffer::verify_field<float> );
   ClassDB::bind_method( D_METHOD( "verify_field_double", "verifier", "field", "align" ), &FlatBuffer::verify_field<double> );
+  ClassDB::bind_method( D_METHOD( "verify_variant", "verifier", "field", "type" ), &FlatBuffer::verify_variant);
+  ClassDB::bind_method( D_METHOD( "verify_offset", "verifier", "field" ), &FlatBuffer::verify_offset );
+  ClassDB::bind_method( D_METHOD( "verify_string", "verifier", "field" ), &FlatBuffer::verify_string );
+
+  ClassDB::bind_method( D_METHOD( "verify_vector_u8", "verifier", "field" ), &FlatBuffer::verify_vector<uint8_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_u16", "verifier", "field" ), &FlatBuffer::verify_vector<uint16_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_u32", "verifier", "field" ), &FlatBuffer::verify_vector<uint32_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_u64", "verifier", "field" ), &FlatBuffer::verify_vector<uint64_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_of_variant", "verifier", "field", "type" ), &FlatBuffer::verify_vector_of_variant);
 }
 
 // MARK: Function Definitions
@@ -495,6 +506,194 @@ godot::Variant FlatBuffer::decode_variant(int64_t start, const godot::Variant::T
   return nullptr;
 }
 
+// MARK: Verification
+//  │__   __       _  __ _         _   _
+//  │\ \ / /__ _ _(_)/ _(_)__ __ _| |_(_)___ _ _
+//  │ \ V / -_) '_| |  _| / _/ _` |  _| / _ \ ' \
+//  │  \_/\___|_| |_|_| |_\__\__,_|\__|_\___/_||_|
+//  ╰───────────────────────────────────────────────
+
+bool FlatBuffer::verify_variant(
+        const FlatBufferVerifier *verifier, const voffset_t field, const godot::Variant::Type type) const {
+  // the alignment is known for the variant types so it doesnt need to be passed to this function.
+  // double precision alignment would be 8, i might have to double check things.
+  const auto v = verifier->getVerifier();
+  switch( type ) {
+    case godot::Variant::NIL:
+      break;
+    case godot::Variant::BOOL:
+      return table->VerifyField< uint8_t >(*v, field, 1);
+    case godot::Variant::INT:
+      return table->VerifyField< int64_t >(*v, field, 8);
+    case godot::Variant::FLOAT:
+      return table->VerifyField< double >(*v, field, 8);
+    case godot::Variant::STRING:
+      return verify_string(verifier, field);
+    case godot::Variant::VECTOR2:
+      return table->VerifyField< godot::Vector2 >(*v, field, 4);
+    case godot::Variant::VECTOR2I:
+      return table->VerifyField< godot::Vector2i >(*v, field, 4);
+    case godot::Variant::RECT2:
+      return table->VerifyField< godot::Rect2 >(*v, field, 4);
+    case godot::Variant::RECT2I:
+      return table->VerifyField< godot::Rect2i >(*v, field, 4);
+    case godot::Variant::VECTOR3:
+      return table->VerifyField< godot::Vector3 >(*v, field, 4);
+    case godot::Variant::VECTOR3I:
+      return table->VerifyField< godot::Vector3i >(*v, field, 4);
+    case godot::Variant::TRANSFORM2D:
+      return table->VerifyField< godot::Transform2D >(*v, field, 4);
+    case godot::Variant::VECTOR4:
+      return table->VerifyField< godot::Vector4 >(*v, field, 4);
+    case godot::Variant::VECTOR4I:
+      return table->VerifyField< godot::Vector4i >(*v, field, 4);
+    case godot::Variant::PLANE:
+      return table->VerifyField< godot::Plane >(*v, field, 4);
+    case godot::Variant::QUATERNION:
+      return table->VerifyField< godot::Quaternion >(*v, field, 4);
+    case godot::Variant::AABB:
+      return table->VerifyField< godot::AABB >(*v, field, 4);
+    case godot::Variant::BASIS:
+      return table->VerifyField< godot::Basis >(*v, field, 4);
+    case godot::Variant::TRANSFORM3D:
+      return table->VerifyField< godot::Transform3D >(*v, field, 4);
+    case godot::Variant::PROJECTION:
+      return table->VerifyField< godot::Projection >(*v, field, 4);
+    case godot::Variant::COLOR:
+      return table->VerifyField< godot::Color >(*v, field, 4);
+    case godot::Variant::STRING_NAME:
+      return verify_string(verifier, field);
+    case godot::Variant::NODE_PATH:
+      return verify_string(verifier, field);
+    case godot::Variant::RID:
+      break;
+    case godot::Variant::OBJECT:
+      break;
+    case godot::Variant::CALLABLE:
+      break;
+    case godot::Variant::SIGNAL:
+      break;
+    case godot::Variant::DICTIONARY:
+      break;
+    case godot::Variant::ARRAY:
+      break;
+    case godot::Variant::PACKED_BYTE_ARRAY:
+      break;
+    case godot::Variant::PACKED_INT32_ARRAY:
+      break;
+    case godot::Variant::PACKED_INT64_ARRAY:
+      break;
+    case godot::Variant::PACKED_FLOAT32_ARRAY:
+      break;
+    case godot::Variant::PACKED_FLOAT64_ARRAY:
+      break;
+    case godot::Variant::PACKED_STRING_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR2_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR3_ARRAY:
+      break;
+    case godot::Variant::PACKED_COLOR_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR4_ARRAY:
+      break;
+    case godot::Variant::VARIANT_MAX:
+      break;
+  }
+  return false;
+}
+
+
+bool FlatBuffer::verify_vector_of_variant(
+        const FlatBufferVerifier *verifier, const voffset_t field, const godot::Variant::Type type) const {
+  // the alignment is known for the variant types so it doesnt need to be passed to this function.
+  // double precision alignment would be 8, i might have to double check things.
+  const auto v = verifier->getVerifier();
+  switch( type ) {
+    case godot::Variant::NIL:
+      break;
+    case godot::Variant::BOOL:
+      break;
+    case godot::Variant::INT:
+      break;
+    case godot::Variant::FLOAT:
+      break;
+    case godot::Variant::STRING:
+      break;
+    case godot::Variant::VECTOR2:
+      return table->VerifyVectorWithDefault< godot::Vector2 >(*v, field);
+    case godot::Variant::VECTOR2I:
+      return table->VerifyVectorWithDefault< godot::Vector2i >(*v, field);
+    case godot::Variant::RECT2:
+      return table->VerifyVectorWithDefault< godot::Rect2 >(*v, field);
+    case godot::Variant::RECT2I:
+      return table->VerifyVectorWithDefault< godot::Rect2i >(*v, field);
+    case godot::Variant::VECTOR3:
+      return table->VerifyVectorWithDefault< godot::Vector3 >(*v, field);
+    case godot::Variant::VECTOR3I:
+      return table->VerifyVectorWithDefault< godot::Vector3i >(*v, field);
+    case godot::Variant::TRANSFORM2D:
+      return table->VerifyVectorWithDefault< godot::Transform2D >(*v, field);
+    case godot::Variant::VECTOR4:
+      return table->VerifyVectorWithDefault< godot::Vector4 >(*v, field);
+    case godot::Variant::VECTOR4I:
+      return table->VerifyVectorWithDefault< godot::Vector4i >(*v, field);
+    case godot::Variant::PLANE:
+      return table->VerifyVectorWithDefault< godot::Plane >(*v, field);
+    case godot::Variant::QUATERNION:
+      return table->VerifyVectorWithDefault< godot::Quaternion >(*v, field);
+    case godot::Variant::AABB:
+      return table->VerifyVectorWithDefault< godot::AABB >(*v, field);
+    case godot::Variant::BASIS:
+      return table->VerifyVectorWithDefault< godot::Basis >(*v, field);
+    case godot::Variant::TRANSFORM3D:
+      return table->VerifyVectorWithDefault< godot::Transform3D >(*v, field);
+    case godot::Variant::PROJECTION:
+      return table->VerifyVectorWithDefault< godot::Projection >(*v, field);
+    case godot::Variant::COLOR:
+      return table->VerifyVectorWithDefault< godot::Color >(*v, field);
+    case godot::Variant::STRING_NAME:
+      break;
+    case godot::Variant::NODE_PATH:
+      break;
+    case godot::Variant::RID:
+      break;
+    case godot::Variant::OBJECT:
+      break;
+    case godot::Variant::CALLABLE:
+      break;
+    case godot::Variant::SIGNAL:
+      break;
+    case godot::Variant::DICTIONARY:
+      break;
+    case godot::Variant::ARRAY:
+      break;
+    case godot::Variant::PACKED_BYTE_ARRAY:
+      break;
+    case godot::Variant::PACKED_INT32_ARRAY:
+      break;
+    case godot::Variant::PACKED_INT64_ARRAY:
+      break;
+    case godot::Variant::PACKED_FLOAT32_ARRAY:
+      break;
+    case godot::Variant::PACKED_FLOAT64_ARRAY:
+      break;
+    case godot::Variant::PACKED_STRING_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR2_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR3_ARRAY:
+      break;
+    case godot::Variant::PACKED_COLOR_ARRAY:
+      break;
+    case godot::Variant::PACKED_VECTOR4_ARRAY:
+      break;
+    case godot::Variant::VARIANT_MAX:
+      break;
+  }
+  return false;
+}
+
 
 // Returns the offset to the field at the vtable position given.
 int64_t FlatBuffer::get_field_offset(const int64_t vtable_pos) const {
@@ -517,31 +716,21 @@ int64_t FlatBuffer::get_field_offset(const int64_t vtable_pos) const {
   return fb_bytes->decode_s16(vtable_start + vtable_pos);
 }
 
-
-FlatBuffer::voffset_t FlatBuffer::get_optional_field_offset(const voffset_t vtable_pos) const {
-  // The vtable offset is always at the start.
-  const auto vtable = get_vtable();
-  // The first element is the size of the vtable (fields + type id + itself).
-  const auto vtsize = flatbuffers::ReadScalar< voffset_t >(vtable);
-  // If the field we're accessing is outside the vtable, we're reading older
-  // data, so it's the same as if the offset was 0 (not present).
-  return vtable_pos < vtsize ? flatbuffers::ReadScalar< voffset_t >(vtable + vtable_pos) : 0;
-}
-
-
 // returns offset from the start of the buffer to the inline field.
 int64_t FlatBuffer::get_inline_field_start(const int64_t vtable_pos) const {
   const int field_offset = get_field_offset(vtable_pos); // NOLINT(*-narrowing-conversions)
-  if( ! field_offset )
+  if( ! field_offset ) {
     return 0;
+}
   return fb_start + field_offset;
 }
 
 // returns offset from the start of the buffer to the offset field.
 int64_t FlatBuffer::get_offset_field_start(const int64_t vtable_pos) const {
   const int field_offset = get_field_offset(vtable_pos); // NOLINT(*-narrowing-conversions)
-  if( ! field_offset )
+  if( ! field_offset ) {
     return 0;
+}
   return fb_start + field_offset + fb_bytes->decode_u32(fb_start + field_offset);
 }
 
@@ -555,8 +744,9 @@ godot::Variant FlatBuffer::get_variant(const int64_t field_start, const godot::V
 godot::Variant FlatBuffer::get_variant_at(
         const int64_t vtable_pos, const uint32_t index, const godot::Variant::Type expected_type) const {
   const uoffset_t elements_start = get_offset_field_start(vtable_pos) + sizeof(uint32_t);
-  if( not elements_start )
+  if( not elements_start ) {
     return {};
+}
 
   const uint64_t element_start = elements_start + index * get_variant_struct_size(expected_type);
   return decode_variant(element_start, expected_type);
@@ -564,8 +754,9 @@ godot::Variant FlatBuffer::get_variant_at(
 
 int64_t FlatBuffer::get_array_size(const int64_t vtable_offset) const {
   const int64_t field_start = get_offset_field_start(vtable_offset);
-  if( ! field_start )
+  if( ! field_start ) {
     return 0;
+}
   return fb_bytes->decode_u32(field_start);
 }
 

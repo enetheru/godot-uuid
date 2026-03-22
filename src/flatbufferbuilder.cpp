@@ -13,7 +13,7 @@ void FlatBufferBuilder::_bind_methods() {
   using godot::ClassDB;
   using godot::D_METHOD;
 
-  ClassDB::bind_static_method("FlatBufferBuilder", D_METHOD("create", "size"), &Create);
+  ClassDB::bind_static_method("FlatBufferBuilder", D_METHOD("create", "size"), &Create, 1024);
 
   ClassDB::bind_method(D_METHOD("clear"), &FlatBufferBuilder::Clear);
   ClassDB::bind_method(D_METHOD("reset"), &FlatBufferBuilder::Reset);
