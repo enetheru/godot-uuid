@@ -228,6 +228,9 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "verify_vector_u32", "verifier", "field" ), &FlatBuffer::verify_vector<uint32_t>);
   ClassDB::bind_method( D_METHOD( "verify_vector_u64", "verifier", "field" ), &FlatBuffer::verify_vector<uint64_t>);
 
+  ClassDB::bind_method( D_METHOD( "verify_vector_float", "verifier", "field" ), &FlatBuffer::verify_vector<float>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_double", "verifier", "field" ), &FlatBuffer::verify_vector<double>);
+
   ClassDB::bind_method( D_METHOD( "verify_vector_of_variant", "verifier", "field", "type" ), &FlatBuffer::verify_vector_of_variant);
 }
 
