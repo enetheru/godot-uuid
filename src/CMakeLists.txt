@@ -16,6 +16,8 @@ set( SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/uuid.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/flatbufferbuilder.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/flatbufferbuilder.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/flatbufferverifier.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/flatbufferverifier.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/utils.hpp
         ${FBHEADERS}
         PARENT_SCOPE

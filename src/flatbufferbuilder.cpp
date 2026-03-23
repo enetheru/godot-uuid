@@ -1,243 +1,595 @@
 #include "flatbufferbuilder.hpp"
-#include "utils.hpp"
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+
+#include "flatbuffer.hpp"
 
 /*
  * Flatbuffer Builder wrapper for gdscript
  */
 namespace godot_flatbuffers {
 void FlatBufferBuilder::_bind_methods() {
-  using namespace godot;
+  // using namespace godot;
+  using godot::ClassDB;
+  using godot::D_METHOD;
 
-  ClassDB::bind_static_method( "FlatBufferBuilder", D_METHOD( "create", "size" ), &Create );
+  ClassDB::bind_static_method("FlatBufferBuilder", D_METHOD("create", "size"), &Create, 1024);
 
-  ClassDB::bind_method( D_METHOD( "clear" ), &FlatBufferBuilder::Clear );
-  ClassDB::bind_method( D_METHOD( "reset" ), &FlatBufferBuilder::Reset );
-  ClassDB::bind_method( D_METHOD( "finish", "table_offset" ), &FlatBufferBuilder::Finish );
-  ClassDB::bind_method( D_METHOD( "start_table" ), &FlatBufferBuilder::StartTable );
-  ClassDB::bind_method( D_METHOD( "end_table", "start" ), &FlatBufferBuilder::EndTable );
-  ClassDB::bind_method( D_METHOD( "get_size" ), &FlatBufferBuilder::GetSize );
-  ClassDB::bind_method( D_METHOD( "to_packed_byte_array" ), &FlatBufferBuilder::GetPackedByteArray );
+  ClassDB::bind_method(D_METHOD("clear"), &FlatBufferBuilder::Clear);
+  ClassDB::bind_method(D_METHOD("reset"), &FlatBufferBuilder::Reset);
+  ClassDB::bind_method(D_METHOD("finish", "table_offset"), &FlatBufferBuilder::Finish);
+  ClassDB::bind_method(D_METHOD("start_table"), &FlatBufferBuilder::StartTable);
+  ClassDB::bind_method(D_METHOD("end_table", "start"), &FlatBufferBuilder::EndTable);
+  ClassDB::bind_method(D_METHOD("get_size"), &FlatBufferBuilder::GetSize);
+  ClassDB::bind_method(D_METHOD("get_buffer"), &FlatBufferBuilder::GetPackedByteArray);
+
+  // MARK: Create
+  //  │  ___              _          [br]
+  //  │ / __|_ _ ___ __ _| |_ ___    [br]
+  //  │| (__| '_/ -_) _` |  _/ -_)   [br]
+  //  │ \___|_| \___\__,_|\__\___|   [br]
+  //  ╰───────────────────────────── [br]
+  //  Create is used when the data is offset from the table or struct or vector.
+
+  ClassDB::bind_method(
+          D_METHOD("create_variant", "value", "type"), &FlatBufferBuilder::CreateVariant,
+          godot::Variant::Type::VARIANT_MAX);
+
+  // == Create Vectors of Offset(uint32_t) ==
+  ClassDB::bind_method(D_METHOD("create_vector_offset", "array"), &FlatBufferBuilder::CreateVectorOfOffset);
+
+  // == Create Vectors of Scalars ==
+  ClassDB::bind_method(D_METHOD("create_vector_int8", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int8_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint8", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint8_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_int16", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int16_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint16", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint16_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_int32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int32_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint32_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_int64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< int64_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_uint64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< uint64_t >);
+  ClassDB::bind_method(D_METHOD("create_vector_float32", "array"), &FlatBufferBuilder::CreateVectorOfScalar< float >);
+  ClassDB::bind_method(D_METHOD("create_vector_float64", "array"), &FlatBufferBuilder::CreateVectorOfScalar< double >);
+
+
+  ClassDB::bind_method(
+          D_METHOD("create_vector_of_custom_struct", "array", "element_size"),
+          &FlatBufferBuilder::CreateVectorOfCustomStructs);
+
+  ClassDB::bind_method(
+          D_METHOD("create_vector_of_table", "array", "create_func"),
+          &FlatBufferBuilder::CreateVectorOfTable);
+
+  ClassDB::bind_method(
+          D_METHOD("create_vector_of_union", "array", "create_func"),
+          &FlatBufferBuilder::CreateVectorOfUnion);
+
+  // MARK: Add
+  //  │   _      _    _    [br]
+  //  │  /_\  __| |__| |   [br]
+  //  │ / _ \/ _` / _` |   [br]
+  //  │/_/ \_\__,_\__,_|   [br]
+  //  ╰─────────────────── [br]
+  //  Add is used when the data is inline with the table or struct
 
   // == Add functions ==
-  ClassDB::bind_method( D_METHOD( "add_offset", "voffset", "value" ), &FlatBufferBuilder::AddOffset );
-  ClassDB::bind_method( D_METHOD( "add_bytes", "voffset", "value" ), &FlatBufferBuilder::AddBytes );
-
-  ClassDB::bind_method( D_METHOD( "add_element_bool", "voffset", "value" ), &FlatBufferBuilder::AddScalar< bool, uint8_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_byte", "voffset", "value" ), &FlatBufferBuilder::AddScalar< int64_t, int8_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_ubyte", "voffset", "value" ), &FlatBufferBuilder::AddScalar< uint64_t, uint8_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_short", "voffset", "value" ), &FlatBufferBuilder::AddScalar< int64_t, int16_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_ushort", "voffset", "value" ), &FlatBufferBuilder::AddScalar< uint64_t, uint16_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_int", "voffset", "value" ), &FlatBufferBuilder::AddScalar< int64_t, int32_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_uint", "voffset", "value" ), &FlatBufferBuilder::AddScalar< uint64_t, uint32_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_long", "voffset", "value" ), &FlatBufferBuilder::AddScalar< int64_t, int64_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_ulong", "voffset", "value" ), &FlatBufferBuilder::AddScalar< uint64_t, uint64_t > );
-  ClassDB::bind_method( D_METHOD( "add_element_float", "voffset", "value" ), &FlatBufferBuilder::AddScalar< double, float > );
-  ClassDB::bind_method( D_METHOD( "add_element_double", "voffset", "value" ), &FlatBufferBuilder::AddScalar< double, double > );
+  ClassDB::bind_method(D_METHOD("add_offset", "voffset", "value"), &FlatBufferBuilder::AddOffset);
+  ClassDB::bind_method(D_METHOD("add_bytes", "voffset", "value"), &FlatBufferBuilder::AddBytes);
 
   ClassDB::bind_method(
-      D_METHOD( "add_element_bool_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< bool, uint8_t > );
+          D_METHOD("add_element_bool", "voffset", "value"), &FlatBufferBuilder::AddScalar< bool, uint8_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_byte_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< int64_t, int8_t > );
+          D_METHOD("add_element_byte", "voffset", "value"), &FlatBufferBuilder::AddScalar< int64_t, int8_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_ubyte_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< uint64_t, uint8_t > );
+          D_METHOD("add_element_ubyte", "voffset", "value"), &FlatBufferBuilder::AddScalar< uint64_t, uint8_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_short_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< int64_t, int16_t > );
+          D_METHOD("add_element_short", "voffset", "value"), &FlatBufferBuilder::AddScalar< int64_t, int16_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_ushort_default", "voffset", "value", "default" ),
-      &FlatBufferBuilder::AddScalarDefault< uint64_t, uint16_t > );
+          D_METHOD("add_element_ushort", "voffset", "value"), &FlatBufferBuilder::AddScalar< uint64_t, uint16_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_int_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< int64_t, int32_t > );
+          D_METHOD("add_element_int", "voffset", "value"), &FlatBufferBuilder::AddScalar< int64_t, int32_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_uint_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< uint64_t, uint32_t > );
+          D_METHOD("add_element_uint", "voffset", "value"), &FlatBufferBuilder::AddScalar< uint64_t, uint32_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_long_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< int64_t, int64_t > );
+          D_METHOD("add_element_long", "voffset", "value"), &FlatBufferBuilder::AddScalar< int64_t, int64_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_ulong_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< uint64_t, uint64_t > );
+          D_METHOD("add_element_ulong", "voffset", "value"), &FlatBufferBuilder::AddScalar< uint64_t, uint64_t >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_float_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< double, float > );
+          D_METHOD("add_element_float", "voffset", "value"), &FlatBufferBuilder::AddScalar< double, float >);
   ClassDB::bind_method(
-      D_METHOD( "add_element_double_default", "voffset", "value", "default" ), &FlatBufferBuilder::AddScalarDefault< double, double > );
+          D_METHOD("add_element_double", "voffset", "value"), &FlatBufferBuilder::AddScalar< double, double >);
 
-  // == Create Functions ==
-  ClassDB::bind_method( D_METHOD( "create_vector_offset", "array" ), &FlatBufferBuilder::CreateVectorOffset );
-  ClassDB::bind_method( D_METHOD( "create_vector_table", "array", "constructor" ), &FlatBufferBuilder::CreateVectorTable );
-
-  ClassDB::bind_method( D_METHOD( "create_vector_int8", "array" ), &FlatBufferBuilder::CreatePackedArray< int8_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_uint8", "array" ), &FlatBufferBuilder::CreatePackedArray< uint8_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_int16", "array" ), &FlatBufferBuilder::CreatePackedArray< int16_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_uint16", "array" ), &FlatBufferBuilder::CreatePackedArray< uint16_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_int32", "array" ), &FlatBufferBuilder::CreatePackedArray< int32_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_uint32", "array" ), &FlatBufferBuilder::CreatePackedArray< uint32_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_int64", "array" ), &FlatBufferBuilder::CreatePackedArray< int64_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_uint64", "array" ), &FlatBufferBuilder::CreatePackedArray< uint64_t > );
-  ClassDB::bind_method( D_METHOD( "create_vector_float32", "array" ), &FlatBufferBuilder::CreatePackedArray< float > );
-  ClassDB::bind_method( D_METHOD( "create_vector_float64", "array" ), &FlatBufferBuilder::CreatePackedArray< double > );
-
-  //// atomic types
-  // BOOL,
-  // INT,
-  // FLOAT,
-  // STRING,
-  ClassDB::bind_method( D_METHOD( "create_String", "string" ), &FlatBufferBuilder::CreateString );
-
-  //// math types
-  // VECTOR2,
-  ClassDB::bind_method( D_METHOD( "add_Vector2", "voffset", "vector2" ), &FlatBufferBuilder::AddGodotStruct< godot::Vector2 > );
-  ClassDB::bind_method( D_METHOD( "create_Vector2", "vector2" ), &FlatBufferBuilder::CreateGodotStruct< godot::Vector2 > );
-  // VECTOR2I,
-  ClassDB::bind_method( D_METHOD( "add_Vector2i", "voffset", "vector2i" ), &FlatBufferBuilder::AddGodotStruct< godot::Vector2i > );
-  ClassDB::bind_method( D_METHOD( "create_Vector2i", "vector2i" ), &FlatBufferBuilder::CreateGodotStruct< godot::Vector2i > );
-  // RECT2,
-  ClassDB::bind_method( D_METHOD( "add_Rect2", "rect2", "quaternion" ), &FlatBufferBuilder::AddGodotStruct< godot::Rect2 > );
-  ClassDB::bind_method( D_METHOD( "create_Rect2", "rect2" ), &FlatBufferBuilder::CreateGodotStruct< godot::Rect2 > );
-  // RECT2I,
-  ClassDB::bind_method( D_METHOD( "add_Rect2i", "rect2i", "quaternion" ), &FlatBufferBuilder::AddGodotStruct< godot::Rect2i > );
-  ClassDB::bind_method( D_METHOD( "create_Rect2i", "rect2i" ), &FlatBufferBuilder::CreateGodotStruct< godot::Rect2i > );
-  // VECTOR3,
-  ClassDB::bind_method( D_METHOD( "add_Vector3", "voffset", "vector3" ), &FlatBufferBuilder::AddGodotStruct< godot::Vector3 > );
-  ClassDB::bind_method( D_METHOD( "create_Vector3", "vector3" ), &FlatBufferBuilder::CreateGodotStruct< godot::Vector3 > );
-  // VECTOR3I,
-  ClassDB::bind_method( D_METHOD( "add_Vector3i", "voffset", "vector3i" ), &FlatBufferBuilder::AddGodotStruct< godot::Vector3i > );
-  ClassDB::bind_method( D_METHOD( "create_Vector3i", "vector3i" ), &FlatBufferBuilder::CreateGodotStruct< godot::Vector3i > );
-  // TRANSFORM2D,
   ClassDB::bind_method(
-      D_METHOD( "add_Transform2D", "voffset", "transform2d" ), &FlatBufferBuilder::AddGodotStruct< godot::Transform2D > );
-  ClassDB::bind_method( D_METHOD( "create_Transform2D", "transform2d" ), &FlatBufferBuilder::CreateGodotStruct< godot::Transform2D > );
-  // VECTOR4,
-  ClassDB::bind_method( D_METHOD( "add_Vector4", "voffset", "vector4" ), &FlatBufferBuilder::AddGodotStruct< godot::Vector4 > );
-  ClassDB::bind_method( D_METHOD( "create_Vector4", "vector4" ), &FlatBufferBuilder::CreateGodotStruct< godot::Vector4 > );
-  // VECTOR4I,
-  ClassDB::bind_method( D_METHOD( "add_Vector4i", "voffset", "vector4i" ), &FlatBufferBuilder::AddGodotStruct< godot::Vector4i > );
-  ClassDB::bind_method( D_METHOD( "create_Vector4i", "vector4i" ), &FlatBufferBuilder::CreateGodotStruct< godot::Vector4i > );
-  // PLANE,
-  ClassDB::bind_method( D_METHOD( "add_Plane", "voffset", "plane" ), &FlatBufferBuilder::AddGodotStruct< godot::Plane > );
-  ClassDB::bind_method( D_METHOD( "create_Plane", "plane" ), &FlatBufferBuilder::CreateGodotStruct< godot::Plane > );
-  // QUATERNION,
-  ClassDB::bind_method( D_METHOD( "add_Quaternion", "voffset", "quaternion" ), &FlatBufferBuilder::AddGodotStruct< godot::Quaternion > );
-  ClassDB::bind_method( D_METHOD( "create_Quaternion", "quaternion" ), &FlatBufferBuilder::CreateGodotStruct< godot::Quaternion > );
-  // AABB,
-  ClassDB::bind_method( D_METHOD( "add_AABB", "voffset", "aabb" ), &FlatBufferBuilder::AddGodotStruct< godot::AABB > );
-  ClassDB::bind_method( D_METHOD( "create_AABB", "aabb" ), &FlatBufferBuilder::CreateGodotStruct< godot::AABB > );
-  // BASIS,
-  ClassDB::bind_method( D_METHOD( "add_Basis", "basis" ), &FlatBufferBuilder::AddGodotStruct< godot::Basis > );
-  ClassDB::bind_method( D_METHOD( "create_Basis", "basis" ), &FlatBufferBuilder::CreateGodotStruct< godot::Basis > );
-  // TRANSFORM3D,
+          D_METHOD("add_element_bool_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< bool, uint8_t, true >);
   ClassDB::bind_method(
-      D_METHOD( "add_Transform3D", "voffset", "transform3d" ), &FlatBufferBuilder::AddGodotStruct< godot::Transform3D > );
-  ClassDB::bind_method( D_METHOD( "create_Transform3D", "transform3d" ), &FlatBufferBuilder::CreateGodotStruct< godot::Transform3D > );
-  // PROJECTION,
-  ClassDB::bind_method( D_METHOD( "add_Projection", "voffset", "projection" ), &FlatBufferBuilder::AddGodotStruct< godot::Projection > );
-  ClassDB::bind_method( D_METHOD( "create_Projection", "projection" ), &FlatBufferBuilder::CreateGodotStruct< godot::Projection > );
+          D_METHOD("add_element_byte_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< int64_t, int8_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_ubyte_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< uint64_t, uint8_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_short_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< int64_t, int16_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_ushort_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< uint64_t, uint16_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_int_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< int64_t, int32_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_uint_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< uint64_t, uint32_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_long_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< int64_t, int64_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_ulong_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< uint64_t, uint64_t, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_float_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< double, float, true >);
+  ClassDB::bind_method(
+          D_METHOD("add_element_double_default", "voffset", "value", "default"),
+          &FlatBufferBuilder::AddScalar< double, double, true >);
 
-  //// misc types
-  // COLOR,
-  ClassDB::bind_method( D_METHOD( "add_Color", "color" ), &FlatBufferBuilder::AddGodotStruct< godot::Color > );
-  ClassDB::bind_method( D_METHOD( "create_Color", "color" ), &FlatBufferBuilder::CreateGodotStruct< godot::Color > );
-  // STRING_NAME,
-  // NODE_PATH,
-  // RID,
-  // OBJECT,
-  // CALLABLE,
-  // SIGNAL,
-  // DICTIONARY,
-  // ARRAY,
-
-  //// typed arrays
-  // PACKED_BYTE_ARRAY,
-  ClassDB::bind_method( D_METHOD( "create_PackedByteArray", "array" ), &FlatBufferBuilder::CreatePackedArray< uint8_t > );
-  // PACKED_INT32_ARRAY,
-  ClassDB::bind_method( D_METHOD( "create_PackedInt32Array", "array" ), &FlatBufferBuilder::CreatePackedArray< uint32_t > );
-  // PACKED_INT64_ARRAY,
-  ClassDB::bind_method( D_METHOD( "create_PackedInt64Array", "array" ), &FlatBufferBuilder::CreatePackedArray< uint64_t > );
-  // PACKED_FLOAT32_ARRAY,
-  ClassDB::bind_method( D_METHOD( "create_PackedFloat32Array", "array" ), &FlatBufferBuilder::CreatePackedArray< float > );
-  // PACKED_FLOAT64_ARRAY,
-  ClassDB::bind_method( D_METHOD( "create_PackedFloat64Array", "array" ), &FlatBufferBuilder::CreatePackedArray< double > );
-  // PACKED_STRING_ARRAY,
-  ClassDB::bind_method( D_METHOD( "create_PackedStringArray", "array" ), &FlatBufferBuilder::CreatePackedStringArray );
-
-  // PACKED_VECTOR2_ARRAY,
-  // PACKED_VECTOR3_ARRAY,
-  // PACKED_COLOR_ARRAY,
-  // PACKED_VECTOR4_ARRAY,
+  // Convenience functo to add or create godot type's
+  ClassDB::bind_method(
+          D_METHOD("add_variant", "voffset", "value", "type"), &FlatBufferBuilder::AddGodotVariant,
+          godot::Variant::Type::VARIANT_MAX);
 }
 
-FlatBufferBuilder::FlatBufferBuilder() {
-  builder = std::make_unique< flatbuffers::FlatBufferBuilder >();
-}
+FlatBufferBuilder::FlatBufferBuilder() { builder = std::make_unique< flatbuffers::FlatBufferBuilder >(); }
 
-FlatBufferBuilder::FlatBufferBuilder( int size ) {
-  builder = std::make_unique< flatbuffers::FlatBufferBuilder >( size );
-}
+FlatBufferBuilder::FlatBufferBuilder(int size) { builder = std::make_unique< flatbuffers::FlatBufferBuilder >(size); }
 
-void FlatBufferBuilder::Finish( const uint32_t root ) const {
+void FlatBufferBuilder::Finish(const uint32_t root) const {
   const Offset offset = root;
-  builder->Finish( offset, nullptr );
+  builder->Finish(offset, nullptr);
 }
 
 godot::PackedByteArray FlatBufferBuilder::GetPackedByteArray() const {
   const int64_t size  = builder->GetSize();
   auto          bytes = godot::PackedByteArray();
-  bytes.resize( size );
-  std::memcpy( bytes.ptrw(), builder->GetBufferPointer(), size );
+  bytes.resize(size);
+  std::memcpy(bytes.ptrw(), builder->GetBufferPointer(), size);
   return bytes;
 }
 
-// == Add Functions ==
-void FlatBufferBuilder::AddOffset( const uint16_t voffset, const uint64_t value ) const {
-  builder->AddOffset( voffset, Offset( value ) );
+FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVariant(
+        const godot::Variant &value, godot::Variant::Type variant_type = godot::Variant::Type::VARIANT_MAX) const {
+
+  if( variant_type == godot::Variant::Type::VARIANT_MAX ) {
+    variant_type = value.get_type();
+  } else {
+    ERR_FAIL_COND_V_MSG(0, variant_type != value.get_type(), "given type does not match expected type");
+  }
+
+  switch( variant_type ) {
+    case godot::Variant::NIL:
+      break;
+    case godot::Variant::BOOL: {
+      ERR_FAIL_V_MSG(
+              0, "Invalid type(bool) given as value. Only structs, tables, and vector"
+                 " are allowed. You probably want to use add_variant instead.");
+    }
+    case godot::Variant::INT: {
+      ERR_FAIL_V_MSG(
+              0, "Invalid type(int) given as value. Only structs, tables, and vector"
+                 " are allowed. You probably want to use add_variant instead.");
+    }
+    case godot::Variant::FLOAT: {
+      ERR_FAIL_V_MSG(
+              0, "Invalid type(float) given as value. Only structs, tables, and"
+                 " vector are allowed. You probably want to use add_variant instead.");
+    }
+    case godot::Variant::STRING: {
+      const auto v   = static_cast< godot::String >(value);
+      const auto str = v.utf8();
+      return builder->CreateString(str.ptr(), str.size()).o;
+    }
+    case godot::Variant::VECTOR2: {
+      const auto v = static_cast< godot::Vector2 >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::VECTOR2I: {
+      const auto v = static_cast< godot::Vector2i >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::RECT2: {
+      const auto v = static_cast< godot::Rect2 >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::RECT2I: {
+      const auto v = static_cast< godot::Rect2i >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::VECTOR3: {
+      const auto v = static_cast< godot::Vector3 >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::VECTOR3I: {
+      const auto v = static_cast< godot::Vector3i >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::TRANSFORM2D: {
+      const auto v = static_cast< godot::Transform2D >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::VECTOR4: {
+      const auto v = static_cast< godot::Vector4 >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::VECTOR4I: {
+      const auto v = static_cast< godot::Vector4i >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::PLANE: {
+      const auto v = static_cast< godot::Plane >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::QUATERNION: {
+      const auto v = static_cast< godot::Quaternion >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::AABB: {
+      const auto v = static_cast< godot::AABB >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::BASIS: {
+      const auto v = static_cast< godot::Basis >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::TRANSFORM3D: {
+      const auto v = static_cast< godot::Transform3D >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::PROJECTION: {
+      const auto v = static_cast< godot::Projection >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::COLOR: {
+      const auto v = static_cast< godot::Color >(value);
+      return builder->CreateStruct(&v).o;
+    }
+    case godot::Variant::STRING_NAME: {
+      const godot::String v   = static_cast< godot::StringName >(value);
+      const auto          str = v.utf8();
+      return builder->CreateString(str.ptr(), str.size()).o;
+    }
+    case godot::Variant::NODE_PATH: {
+      const godot::String v   = static_cast< godot::NodePath >(value);
+      const auto          str = v.utf8();
+      return builder->CreateString(str.ptr(), str.size()).o;
+    }
+    case godot::Variant::RID: {
+      ERR_FAIL_V_MSG(0, "Unsupported type(RID) given as value.");
+    }
+    case godot::Variant::OBJECT: {
+      ERR_FAIL_V_MSG(0, "TODO: Objects can be tables, or structs");
+    }
+    case godot::Variant::CALLABLE: {
+      ERR_FAIL_V_MSG(0, "Unsupported type(Callable) given as value.");
+    }
+    case godot::Variant::SIGNAL: {
+      ERR_FAIL_V_MSG(0, "Unsupported type(Signal) given as value.");
+    }
+    case godot::Variant::DICTIONARY: {
+      const auto v = static_cast< godot::Dictionary >(value);
+    }
+    case godot::Variant::ARRAY: {
+      const auto v = static_cast< godot::Array >(value);
+    }
+    case godot::Variant::PACKED_BYTE_ARRAY: {
+      const auto v = static_cast< godot::PackedByteArray >(value);
+      builder->StartVector< uint8_t >(v.size());
+      for( auto i = v.size(); i > 0; ) {
+        builder->PushElement(v[ --i ]);
+      }
+      return builder->EndVector(v.size());
+    }
+    case godot::Variant::PACKED_INT32_ARRAY: {
+      const auto v = static_cast< godot::PackedInt32Array >(value);
+      builder->StartVector< int32_t >(v.size());
+      for( auto i = v.size(); i > 0; ) {
+        builder->PushElement(v[ --i ]);
+      }
+      return builder->EndVector(v.size());
+    }
+    case godot::Variant::PACKED_INT64_ARRAY: {
+      const auto v = static_cast< godot::PackedInt64Array >(value);
+      builder->StartVector< int64_t >(v.size());
+      for( auto i = v.size(); i > 0; ) {
+        builder->PushElement(v[ --i ]);
+      }
+      return builder->EndVector(v.size());
+    }
+    case godot::Variant::PACKED_FLOAT32_ARRAY: {
+      const auto v = static_cast< godot::PackedFloat32Array >(value);
+      builder->StartVector< float >(v.size());
+      for( auto i = v.size(); i > 0; ) {
+        builder->PushElement(v[ --i ]);
+      }
+      return builder->EndVector(v.size());
+    }
+    case godot::Variant::PACKED_FLOAT64_ARRAY: {
+      const auto v = static_cast< godot::PackedFloat64Array >(value);
+      builder->StartVector< double >(v.size());
+      for( auto i = v.size(); i > 0; ) {
+        builder->PushElement(v[ --i ]);
+      }
+      return builder->EndVector(v.size());
+    }
+    case godot::Variant::PACKED_STRING_ARRAY: {
+      const auto            v = static_cast< godot::PackedStringArray >(value);
+      std::vector< Offset > offsets(v.size());
+      for( int i = 0; i < v.size(); ++i ) {
+        const auto str = v[ i ].utf8();
+        offsets[ i ]   = builder->CreateString(str.ptr(), str.size()).o;
+      }
+      const uoffset_t offset = builder->CreateVector(offsets).o;
+      return offset;
+    }
+    case godot::Variant::PACKED_VECTOR2_ARRAY: {
+      const auto v = static_cast< godot::PackedVector2Array >(value);
+      return builder->CreateVectorOfStructs(v.ptr(), v.size()).o;
+    }
+    case godot::Variant::PACKED_VECTOR3_ARRAY: {
+      const auto v = static_cast< godot::PackedVector3Array >(value);
+      return builder->CreateVectorOfStructs(v.ptr(), v.size()).o;
+    }
+    case godot::Variant::PACKED_COLOR_ARRAY: {
+      const auto v = static_cast< godot::PackedColorArray >(value);
+      return builder->CreateVectorOfStructs(v.ptr(), v.size()).o;
+    }
+    case godot::Variant::PACKED_VECTOR4_ARRAY: {
+      const auto v = static_cast< godot::PackedVector4Array >(value);
+      return builder->CreateVectorOfStructs(v.ptr(), v.size()).o;
+    }
+    case godot::Variant::VARIANT_MAX:
+      break;
+  }
+  ERR_FAIL_V_MSG(0, "This should be impossible.");
 }
 
-
-void FlatBufferBuilder::AddBytes( const uint16_t voffset, const godot::PackedByteArray &bytes ) const {
-  if( bytes.is_empty() )
-    return; // Default, don't store.
-  builder->Align( bytes.size() );
-  builder->PushBytes( bytes.ptr(), bytes.size() );
-  builder->TrackField( voffset, builder->GetSize() );
-}
 
 // == Create Functions
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOffset( const godot::PackedInt32Array &array ) const {
-  builder->StartVector< Offset >( array.size() );
+FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorOfOffset(const godot::PackedInt32Array &array) const {
+  builder->StartVector< Offset >(array.size());
   for( auto i = array.size(); i > 0; ) {
-    builder->PushElement( static_cast< Offset >(array[ --i ]) );
+    builder->PushElement(static_cast< Offset >(array[ --i ]));
   }
-  return builder->EndVector( array.size() );
+  return builder->EndVector(array.size());
 }
 
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVectorTable(
-    const godot::Array &   array,
-    const godot::Callable &constructor ) const {
-  builder->StartVector< Offset >( array.size() );
-  for( auto i = array.size(); i > 0; ) {
-    uoffset_t offset = constructor.call( array[ --i ] );
-    enetheru::print( "c++: constructor.call = {0}", offset );
-    builder->PushElement( static_cast< Offset >(offset) );
-  }
-  return builder->EndVector( array.size() );
-}
 
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreatePackedStringArray( const godot::PackedStringArray &value ) const {
-  std::vector< Offset > offsets( value.size() );
-  for( int i = 0; i < value.size(); ++i ) {
-    offsets[ i ] = CreateString( value[ i ] );
+FlatBufferBuilder::uoffset_t
+FlatBufferBuilder::CreateVectorOfCustomStructs(const godot::Array &value, const size_t elem_size) const {
+  const size_t num_elements = value.size();
+  uint8_t     *buf;
+  const auto   offset =
+          builder->CreateUninitializedVector(num_elements, elem_size, flatbuffers::AlignOf< uoffset_t >(), &buf);
+
+  // Now we have the raw buffer we can paste our objects into it.
+  // There are going to be two types of objects. the well defined godot ones, and the custom ones made from byte arrays.
+  // this should allow me to write arbitrary data into the buffer of any type. But its not very satisfying.
+  // For now I will ignore builtin ones, because they are sort of handled by the packed byte arrays.
+  // Holy shitballs it works first try.
+  for( godot::Object *v : value ) {
+    const FlatBuffer      *fb    = Object::cast_to< FlatBuffer >(v);
+    godot::PackedByteArray bytes = fb->get_bytes();
+    std::memcpy(buf, bytes.ptrw(), std::min(elem_size, static_cast< size_t >(bytes.size())));
+    buf += elem_size;
   }
-  const uoffset_t offset = builder->CreateVector( offsets ).o;
   return offset;
 }
 
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::
-CreatePackedVector2Array( const godot::PackedVector2Array &value ) const {
-  return 0;
-  godot::PackedVector4Array values( value );
-  values.ptrw();
+
+FlatBufferBuilder::uoffset_t
+FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::Callable &creator_func) const {
+  std::vector< uint32_t > offsets(array.size());
+  for( int i = 0; i < array.size(); ++i ) {
+    offsets[ i ] = creator_func.call(this, array[ i ]);
+  }
+  // add the vector of table offsets to the builder and return its offset.
+  builder->StartVector< Offset >(offsets.size());
+  for( auto i = array.size(); i > 0; ) {
+    builder->PushElement(static_cast< Offset >(offsets[ --i ]));
+  }
+  return builder->EndVector(array.size());
 }
 
-FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateString( const godot::String &string ) const {
-  const auto str = string.utf8();
-  return builder->CreateString( str.ptr(), str.size() ).o;
+
+// takes an array and a callable to pack and generate the offsets to the unions.
+godot::PackedInt32Array
+FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::Callable &creator_func) const {
+  godot::PackedInt32Array ret{0,0};
+  // TODO tes the callable before proceeding to make sure it takes two arguments,
+  // and returns a packed int32 array.
+
+  std::vector< uint32_t > value_offsets(array.size());
+  std::vector< uint8_t > type_offsets(array.size());
+  // FIXME, union value type may be different than uint8_t
+
+  for( int i = 0; i < array.size(); ++i ) {
+    godot::PackedInt32Array func_ret = creator_func.call(this, array[ i ]);
+    value_offsets[i] = func_ret[0];
+    type_offsets[i] = func_ret[1];
+  }
+
+  // add the vector of table offsets to the builder and return its offset.
+  builder->StartVector< Offset >(value_offsets.size());
+  for( auto i = array.size(); i > 0; ) {
+    builder->PushElement(static_cast< Offset >(value_offsets[ --i ]));
+  }
+  ret[0] = builder->EndVector(array.size());
+
+  ret[1] = builder->CreateVector(type_offsets).o;
+  return ret;
 }
-} //end namespace
+
+// == Add Functions ==
+void FlatBufferBuilder::AddBytes(const uint16_t voffset, const godot::PackedByteArray &bytes) const {
+  if( bytes.is_empty() ) {
+    return; // Default, don't store.
+  }
+  builder->Align(bytes.size());
+  builder->PushBytes(bytes.ptr(), bytes.size());
+  builder->TrackField(voffset, builder->GetSize());
+}
+
+
+void FlatBufferBuilder::AddGodotVariant(
+        uint16_t voffset, const godot::Variant &value,
+        godot::Variant::Type variant_type = godot::Variant::Type::VARIANT_MAX) const {
+  if( variant_type == godot::Variant::Type::VARIANT_MAX ) {
+    variant_type = value.get_type();
+  } else {
+    ERR_FAIL_COND_MSG(variant_type != value.get_type(), "given type does not match expected type");
+  }
+
+  switch( variant_type ) {
+    case godot::Variant::NIL:
+      break;
+    case godot::Variant::BOOL: {
+      builder->AddElement< bool >(voffset, value);
+      break;
+    }
+    case godot::Variant::INT: {
+      builder->AddElement< int64_t >(voffset, value);
+      break;
+    }
+    case godot::Variant::FLOAT: {
+      builder->AddElement< double >(voffset, value);
+      break;
+    }
+    case godot::Variant::STRING: {
+      ERR_FAIL_MSG(
+              "Invalid type(String) given as value. Only offsets, scalars, structs, and fixed arrays are allowed."
+              "You probably forgot to create the String ahead of time to get its offset which you would add here.");
+    }
+    case godot::Variant::VECTOR2: {
+      const auto v = static_cast< godot::Vector2 >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::VECTOR2I: {
+      const auto v = static_cast< godot::Vector2i >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::RECT2: {
+      const auto v = static_cast< godot::Rect2 >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::RECT2I: {
+      const auto v = static_cast< godot::Rect2i >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::VECTOR3: {
+      const auto v = static_cast< godot::Vector3 >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::VECTOR3I: {
+      const auto v = static_cast< godot::Vector3i >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::TRANSFORM2D: {
+      const auto v = static_cast< godot::Transform2D >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::VECTOR4: {
+      const auto v = static_cast< godot::Vector4 >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::VECTOR4I: {
+      const auto v = static_cast< godot::Vector4i >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::PLANE: {
+      const auto v = static_cast< godot::Plane >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::QUATERNION: {
+      const auto v = static_cast< godot::Quaternion >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::AABB: {
+      const auto v = static_cast< godot::AABB >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::BASIS: {
+      const auto v = static_cast< godot::Basis >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::TRANSFORM3D: {
+      const auto v = static_cast< godot::Transform3D >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::PROJECTION: {
+      const auto v = static_cast< godot::Projection >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::COLOR: {
+      const auto v = static_cast< godot::Color >(value);
+      builder->AddStruct(voffset, &v);
+      break;
+    }
+    case godot::Variant::STRING_NAME: {
+      ERR_FAIL_MSG(
+              "Invalid type(StringName) given as value. Only offsets, scalars, structs, and fixed arrays are allowed."
+              "You probably forgot to create the StringName ahead of time to get its offset which you would add here.");
+    }
+    case godot::Variant::NODE_PATH: {
+      ERR_FAIL_MSG(
+              "Invalid type(NodePath) given as value. Only offsets, scalars, structs, and fixed arrays are allowed."
+              "You probably forgot to create the NodePath ahead of time to get its offset which you would add here.");
+    }
+    case godot::Variant::RID: {
+      ERR_FAIL_MSG("Unsupported type(RID) given as value.");
+    }
+    case godot::Variant::OBJECT:
+      break;
+    case godot::Variant::CALLABLE: {
+      ERR_FAIL_MSG("Unsupported type(Callable) given as value.");
+    }
+    case godot::Variant::SIGNAL: {
+      ERR_FAIL_MSG("Unsupported type(Signal) given as value.");
+    }
+    case godot::Variant::DICTIONARY:
+    case godot::Variant::ARRAY:
+    case godot::Variant::PACKED_BYTE_ARRAY:
+    case godot::Variant::PACKED_INT32_ARRAY:
+    case godot::Variant::PACKED_INT64_ARRAY:
+    case godot::Variant::PACKED_FLOAT32_ARRAY:
+    case godot::Variant::PACKED_FLOAT64_ARRAY:
+    case godot::Variant::PACKED_STRING_ARRAY:
+    case godot::Variant::PACKED_VECTOR2_ARRAY:
+    case godot::Variant::PACKED_VECTOR3_ARRAY:
+    case godot::Variant::PACKED_COLOR_ARRAY:
+    case godot::Variant::PACKED_VECTOR4_ARRAY: {
+      ERR_FAIL_MSG(
+              "Invalid type(Array or Array like) given as value. Only offsets, scalars, structs, and fixed arrays are "
+              "allowed."
+              "You probably forgot to create the Array like type ahead of time to get its offset which you would add "
+              "here.");
+    }
+    default: {
+      ERR_FAIL_MSG("This should be impossible.");
+    }
+  }
+}
+
+}  // namespace godot_flatbuffers
