@@ -218,10 +218,16 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "verify_offset", "verifier", "field" ), &FlatBuffer::verify_offset );
   ClassDB::bind_method( D_METHOD( "verify_string", "verifier", "field" ), &FlatBuffer::verify_string );
 
+  ClassDB::bind_method( D_METHOD( "verify_vector_s8", "verifier", "field" ), &FlatBuffer::verify_vector<int8_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_s16", "verifier", "field" ), &FlatBuffer::verify_vector<int16_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_s32", "verifier", "field" ), &FlatBuffer::verify_vector<int32_t>);
+  ClassDB::bind_method( D_METHOD( "verify_vector_s64", "verifier", "field" ), &FlatBuffer::verify_vector<int64_t>);
+
   ClassDB::bind_method( D_METHOD( "verify_vector_u8", "verifier", "field" ), &FlatBuffer::verify_vector<uint8_t>);
   ClassDB::bind_method( D_METHOD( "verify_vector_u16", "verifier", "field" ), &FlatBuffer::verify_vector<uint16_t>);
   ClassDB::bind_method( D_METHOD( "verify_vector_u32", "verifier", "field" ), &FlatBuffer::verify_vector<uint32_t>);
   ClassDB::bind_method( D_METHOD( "verify_vector_u64", "verifier", "field" ), &FlatBuffer::verify_vector<uint64_t>);
+
   ClassDB::bind_method( D_METHOD( "verify_vector_of_variant", "verifier", "field", "type" ), &FlatBuffer::verify_vector_of_variant);
 }
 
