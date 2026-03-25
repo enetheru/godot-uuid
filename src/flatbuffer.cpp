@@ -270,8 +270,11 @@ auto FlatBuffer::encode_variant(const int64_t start, const godot::Variant &value
   if( expected_type == godot::Variant::Type::VARIANT_MAX ) {
     expected_type = value.get_type();
   } else {
-    // TODO format the string below to show the types.
-    ERR_FAIL_COND_MSG(expected_type != value.get_type(), "given type does not match expected type");
+
+    ERR_FAIL_COND_MSG(expected_type != value.get_type(), godot::vformat(
+      "given type(%s) does not match expected type(%s)",
+      godot::Variant::get_type_name(expected_type),
+      godot::Variant::get_type_name(value.get_type()) ));
   }
 
   switch( expected_type ) {
@@ -424,7 +427,6 @@ auto FlatBuffer::encode_variant(const int64_t start, const godot::Variant &value
 
 
 godot::Variant FlatBuffer::decode_variant(int64_t start, const godot::Variant::Type expected_type) const {
-  // TODO format the string below to show the types.
   ERR_FAIL_COND_V_MSG(expected_type == godot::Variant::Type::VARIANT_MAX, nullptr, "An expected type is required.");
 
   switch( expected_type ) {

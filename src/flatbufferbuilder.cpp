@@ -161,7 +161,7 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVariant(
   if( variant_type == godot::Variant::Type::VARIANT_MAX ) {
     variant_type = value.get_type();
   } else {
-    ERR_FAIL_COND_V_MSG(0, variant_type != value.get_type(), "given type does not match expected type");
+    ERR_FAIL_COND_V_MSG(variant_type != value.get_type(), 0, "given type does not match expected type");
   }
 
   switch( variant_type ) {
@@ -402,18 +402,25 @@ FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::C
 // takes an array and a callable to pack and generate the offsets to the unions.
 godot::PackedInt32Array
 FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::Callable &creator_func) const {
-  godot::PackedInt32Array ret{0,0};
-  // TODO tes the callable before proceeding to make sure it takes two arguments,
-  // and returns a packed int32 array.
+  ERR_FAIL_COND_V_MSG(creator_func.get_argument_count() >= 2, {}, "callable must take at least two arguments");
+  if( array.size()  == 0 ) return {0,0};
 
   std::vector< uint32_t > value_offsets(array.size());
   std::vector< uint8_t > type_offsets(array.size());
   // FIXME, union value type may be different than uint8_t
 
+  {
+    auto check_variant = creator_func.call(this, array[0]);
+    ERR_FAIL_COND_V_MSG(check_variant.get_type() == godot::Variant::Type::PACKED_INT32_ARRAY, {}, "callable must return a packed_int32_array");
+    const godot::PackedInt32Array *check_array = godot::VariantInternal::get_int32_array(&check_variant);
+    ERR_FAIL_COND_V_MSG(check_array->size() == 2, {}, "callable result must contain exactly two elements( offset, type ) ");
+  }
+
   for( int i = 0; i < array.size(); ++i ) {
-    godot::PackedInt32Array func_ret = creator_func.call(this, array[ i ]);
-    value_offsets[i] = func_ret[0];
-    type_offsets[i] = func_ret[1];
+    auto temp = creator_func.call(this, array[ i ]);
+    godot::PackedInt32Array *func_ret = godot::VariantInternal::get_int32_array(&temp);
+    value_offsets[i] = (*func_ret)[0];
+    type_offsets[i] = (*func_ret)[1];
   }
 
   // add the vector of table offsets to the builder and return its offset.
@@ -421,8 +428,9 @@ FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::C
   for( auto i = array.size(); i > 0; ) {
     builder->PushElement(static_cast< Offset >(value_offsets[ --i ]));
   }
-  ret[0] = builder->EndVector(array.size());
 
+  godot::PackedInt32Array ret{0,0};
+  ret[0] = builder->EndVector(array.size());
   ret[1] = builder->CreateVector(type_offsets).o;
   return ret;
 }
