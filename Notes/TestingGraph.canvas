@@ -67,5 +67,9 @@
 		{"id":"96ab484020fb2321","type":"text","text":"**Notes**\n- I don't know when this is used. Needs more research before I go and implement anything for it.","x":5540,"y":2400,"width":580,"height":100},
 		{"id":"4ef892f989720e40","type":"text","text":"- [ ] empty object = `{fbs} {}`\n- [ ] single_value = `{fbs} {ident:value}`\n    - [ ] int dec/hex = `{fbs} {ident:1}`, `{fbs} {ident:0xA}`\n    - [ ] float dec/hex = `{fbs} {ident:1.0}`, `{fbs} {ident:0x0.F}`\n    - [ ] string = `{fbs} {ident:\"value\"}`\n- [ ] multi-value = `{fbs} {ident1:value,ident2:value}`\n- [ ] array value = `{fbs} {ident:[value1,value2]}`\n- [ ] nested object = `{fbs} {ident:{ident:value}}`\n- [ ] array nested = `{fbs} {ident:[{ident:value}]}`\n- [ ] nested array = `{fbs} {ident:{ident:[value]}}`","x":5540,"y":2520,"width":580,"height":300}
 	],
-	"edges":[]
+	"edges":[],
+	"metadata":{
+		"version":"1.0-1.0",
+		"frontmatter":{}
+	}
 }
