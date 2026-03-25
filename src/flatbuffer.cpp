@@ -162,7 +162,8 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "get_memory_address" ), &FlatBuffer::get_memory_address );
 #endif
 
-  // TODO implement a static function get_root(Script, buffer) -> Object
+  ClassDB::bind_static_method("FlatBuffer", D_METHOD("get_root", "buffer", "script" ), &FlatBuffer::get_root);
+
   ClassDB::bind_method( D_METHOD( "assign_buffer", "bytes", "offset" ), &FlatBuffer::assign_buffer );
 
   ClassDB::bind_method( D_METHOD( "set_bytes", "bytes" ), &FlatBuffer::set_bytes );
@@ -232,6 +233,15 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "verify_vector_double", "verifier", "field" ), &FlatBuffer::verify_vector<double>);
 
   ClassDB::bind_method( D_METHOD( "verify_vector_of_variant", "verifier", "field", "type" ), &FlatBuffer::verify_vector_of_variant);
+}
+
+/// Static factory for fetching the buffer as root. takes a variant so that we
+/// the variant internal packed byte array is not copied.
+godot::Ref< FlatBuffer > FlatBuffer::get_root( godot::Variant buffer, const godot::Variant &script) {
+  godot::Ref root = memnew(FlatBuffer);
+  root->set_script(script);
+  root->assign_buffer(buffer, godot::VariantInternal::get_byte_array(&buffer)->decode_u32(0));
+  return root;
 }
 
 // MARK: Function Definitions

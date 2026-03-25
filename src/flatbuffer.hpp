@@ -5,6 +5,7 @@
 
 #include "flatbuffers/flatbuffers.h"
 #include "flatbufferverifier.hpp"
+#include "godot_cpp/classes/script.hpp"
 #include "godot_cpp/variant/variant_internal.hpp"
 
 
@@ -39,6 +40,8 @@ public:
 #ifdef DEBUG
   [[nodiscard]] godot::String get_memory_address() const;
 #endif
+
+  static godot::Ref<FlatBuffer> get_root( godot::Variant, const godot::Variant &);
 
   // Get and Set of properties
   [[nodiscard]] auto get_bytes() const -> godot::Variant { return variant; }
