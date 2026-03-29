@@ -60,7 +60,7 @@ public:
   // vectors : PackedByteArray, PackedInt32Array, PackedInt64Array,
   //           PackedFloat32Array, PackedFloat64Array, PackedVector2Array,
   //           PackedVector3Array, PackedColorArray, PackedVector4Array
-  [[nodiscard]] uoffset_t CreateVariant(const godot::Variant &value, godot::Variant::Type variant_type ) const;
+  [[nodiscard]] uoffset_t CreateVariant(const godot::Variant &value, godot::Variant::Type expected_type ) const;
 
 
   // is a special case when handling offsets.
@@ -135,7 +135,7 @@ public:
   // structs : Vector2, Vector2i, Rect2, Rect2i, Vector3, Vector3i, Transform2D,
   //           Vector4, Vector4i, Plane, Quaternion, AABB, Basis, Transform3D,
   //           Projection, Color
-  void AddGodotVariant(uint16_t voffset, const godot::Variant &value, godot::Variant::Type variant_type) const;
+  void AddGodotVariant(uint16_t voffset, const godot::Variant &value, godot::Variant::Type expected_type) const;
 
 };
 

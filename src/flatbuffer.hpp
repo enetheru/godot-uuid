@@ -5,7 +5,6 @@
 
 #include "flatbuffers/flatbuffers.h"
 #include "flatbufferverifier.hpp"
-#include "godot_cpp/classes/script.hpp"
 #include "godot_cpp/variant/variant_internal.hpp"
 
 

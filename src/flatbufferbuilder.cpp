@@ -156,15 +156,19 @@ godot::PackedByteArray FlatBufferBuilder::GetPackedByteArray() const {
 }
 
 FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVariant(
-        const godot::Variant &value, godot::Variant::Type variant_type = godot::Variant::Type::VARIANT_MAX) const {
+        const godot::Variant &value, godot::Variant::Type expected_type = godot::Variant::Type::VARIANT_MAX) const {
 
-  if( variant_type == godot::Variant::Type::VARIANT_MAX ) {
-    variant_type = value.get_type();
+  if( expected_type == godot::Variant::Type::VARIANT_MAX ) {
+    expected_type = value.get_type();
   } else {
-    ERR_FAIL_COND_V_MSG(variant_type != value.get_type(), 0, "given type does not match expected type");
+    ERR_FAIL_COND_V_MSG(expected_type != value.get_type(),0, godot::vformat(
+      "given type(%s) does not match expected type(%s)",
+      godot::Variant::get_type_name(expected_type),
+      godot::Variant::get_type_name(value.get_type()) ));
   }
 
-  switch( variant_type ) {
+
+  switch( expected_type ) {
     case godot::Variant::NIL:
       break;
     case godot::Variant::BOOL: {
@@ -275,9 +279,11 @@ FlatBufferBuilder::uoffset_t FlatBufferBuilder::CreateVariant(
     }
     case godot::Variant::DICTIONARY: {
       const auto v = static_cast< godot::Dictionary >(value);
+      ERR_FAIL_V_MSG(0, "Unsupported type(Dictionary) given as value.");
     }
     case godot::Variant::ARRAY: {
       const auto v = static_cast< godot::Array >(value);
+      ERR_FAIL_V_MSG(0, "Unsupported type(Array) given as value.");
     }
     case godot::Variant::PACKED_BYTE_ARRAY: {
       const auto v = static_cast< godot::PackedByteArray >(value);
@@ -402,8 +408,12 @@ FlatBufferBuilder::CreateVectorOfTable(const godot::Array &array, const godot::C
 // takes an array and a callable to pack and generate the offsets to the unions.
 godot::PackedInt32Array
 FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::Callable &creator_func) const {
-  ERR_FAIL_COND_V_MSG(creator_func.get_argument_count() >= 2, {}, "callable must take at least two arguments");
+  ERR_FAIL_COND_V_MSG(creator_func.get_argument_count() < 2, {},
+      godot::vformat( "The Callable takes %s arguments, it must take at least two.",
+          creator_func.get_argument_count()));
+
   if( array.size()  == 0 ) return {0,0};
+
 
   std::vector< uint32_t > value_offsets(array.size());
   std::vector< uint8_t > type_offsets(array.size());
@@ -411,9 +421,11 @@ FlatBufferBuilder::CreateVectorOfUnion(const godot::Array &array, const godot::C
 
   {
     auto check_variant = creator_func.call(this, array[0]);
-    ERR_FAIL_COND_V_MSG(check_variant.get_type() == godot::Variant::Type::PACKED_INT32_ARRAY, {}, "callable must return a packed_int32_array");
+    ERR_FAIL_COND_V_MSG(check_variant.get_type() != godot::Variant::Type::PACKED_INT32_ARRAY,
+      {}, godot::vformat( "The callable returned (%s) instead of a PackedInt32Array",
+        godot::Variant::get_type_name(check_variant.get_type()) ));
     const godot::PackedInt32Array *check_array = godot::VariantInternal::get_int32_array(&check_variant);
-    ERR_FAIL_COND_V_MSG(check_array->size() == 2, {}, "callable result must contain exactly two elements( offset, type ) ");
+    ERR_FAIL_COND_V_MSG(check_array->size() != 2, {}, "callable result must contain exactly two elements( offset, type ) ");
   }
 
   for( int i = 0; i < array.size(); ++i ) {
@@ -448,14 +460,18 @@ void FlatBufferBuilder::AddBytes(const uint16_t voffset, const godot::PackedByte
 
 void FlatBufferBuilder::AddGodotVariant(
         uint16_t voffset, const godot::Variant &value,
-        godot::Variant::Type variant_type = godot::Variant::Type::VARIANT_MAX) const {
-  if( variant_type == godot::Variant::Type::VARIANT_MAX ) {
-    variant_type = value.get_type();
+        godot::Variant::Type expected_type = godot::Variant::Type::VARIANT_MAX) const {
+  if( expected_type == godot::Variant::Type::VARIANT_MAX ) {
+    expected_type = value.get_type();
   } else {
-    ERR_FAIL_COND_MSG(variant_type != value.get_type(), "given type does not match expected type");
+    ERR_FAIL_COND_MSG(expected_type != value.get_type(), godot::vformat(
+      "given type(%s) does not match expected type(%s)",
+      godot::Variant::get_type_name(expected_type),
+      godot::Variant::get_type_name(value.get_type()) ));
+
   }
 
-  switch( variant_type ) {
+  switch( expected_type ) {
     case godot::Variant::NIL:
       break;
     case godot::Variant::BOOL: {
