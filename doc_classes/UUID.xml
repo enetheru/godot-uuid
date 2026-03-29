@@ -110,8 +110,8 @@
 		</method>
 		<method name="equals" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="uuid_a" type="Variant" />
-			<param index="1" name="uuid_b" type="Variant" />
+			<param index="0" name="uuid" type="Variant" />
+			<param index="1" name="uuid" type="Variant" />
 			<description>
 				Returns [code]true[/code] if the two UUIDs are equivalent.
 			</description>

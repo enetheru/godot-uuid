@@ -177,7 +177,7 @@ target_sources( "godot-flatbuffers"
 
 # conditionally add doc data to compile output
 if(GODOTCPP_TARGET MATCHES "editor|template_debug")
-    file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/docxml/*.xml")
+    file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/doc_classes/*.xml")
     target_doc_sources( "godot-flatbuffers" "${DOC_XML}" )
 endif()
 

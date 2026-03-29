@@ -235,6 +235,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of double-precision floats at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_float" qualifiers="const">
@@ -242,6 +243,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of single-precision floats at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_of_variant" qualifiers="const">
@@ -250,6 +252,7 @@
 			<param index="1" name="field" type="int" />
 			<param index="2" name="type" type="int" enum="Variant.Type" />
 			<description>
+				Verifies a vector of [Variant] elements of the given [param type] at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_s8" qualifiers="const">
@@ -257,6 +260,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of signed 8-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_s16" qualifiers="const">
@@ -264,6 +268,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of signed 16-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_s32" qualifiers="const">
@@ -271,6 +276,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of signed 32-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_s64" qualifiers="const">
@@ -278,6 +284,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of signed 64-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_u8" qualifiers="const">
@@ -285,6 +292,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of unsigned 8-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_u16" qualifiers="const">
@@ -292,6 +300,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of unsigned 16-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_u32" qualifiers="const">
@@ -299,6 +308,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of unsigned 32-bit integers at [param field].
 			</description>
 		</method>
 		<method name="verify_vector_u64" qualifiers="const">
@@ -306,6 +316,7 @@
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<param index="1" name="field" type="int" />
 			<description>
+				Verifies a vector of unsigned 64-bit integers at [param field].
 			</description>
 		</method>
 	</methods>
