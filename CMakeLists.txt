@@ -18,8 +18,16 @@ option( CMAKE_EXPORT_COMPILE_COMMANDS
 option( BUILD_EXTENSION "build the extension" ON)
 
 ### Information regarding the godot executable
-set( GODOT_EXECUTABLE "${GODOT}" CACHE FILEPATH
-        "Path to the godot executable you are targeting" )
+if( NOT GODOT_EXECUTABLE )
+    if( GODOT )
+        set( GODOT_EXECUTABLE "${GODOT}" CACHE FILEPATH "Path to the godot executable you are targeting" )
+    elseif( DEFINED ENV{GODOT} )
+        set( GODOT_EXECUTABLE "$ENV{GODOT}" CACHE FILEPATH "Path to the godot executable you are targeting" )
+    endif()
+endif()
+
+# This is a fallback to allow the user to still set it via -DGODOT_EXECUTABLE
+set( GODOT_EXECUTABLE "${GODOT_EXECUTABLE}" CACHE FILEPATH "Path to the godot executable you are targeting" )
 
 set( GODOT_PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/project" CACHE PATH
         "Path to a demo project that can test the godot-extension" )
@@ -40,6 +48,7 @@ include(CMakePrintHelpers)
 
 include(cmake/findGodotExecutable.cmake)
 include(cmake/godot-dump.cmake)
+include(cmake/godot-docs.cmake)
 
 find_package(Python3 3.4 REQUIRED) # pathlib should be present
 
@@ -168,7 +177,7 @@ target_sources( "godot-flatbuffers"
 
 # conditionally add doc data to compile output
 if(GODOTCPP_TARGET MATCHES "editor|template_debug")
-    file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/doc_classes/*.xml")
+    file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/docxml/*.xml")
     target_doc_sources( "godot-flatbuffers" "${DOC_XML}" )
 endif()
 

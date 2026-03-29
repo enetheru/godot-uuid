@@ -10,16 +10,24 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="clear_variants">
+		<method name="assign_value">
+			<return type="bool" />
+			<param index="0" name="uuid" type="Variant" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Assigns a [param value] to the given [param uuid] in the internal map. Returns [code]true[/code] if successful.
+			</description>
+		</method>
+		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears all entries from the internal variant map.
+				Clears all entries from the internal map.
 			</description>
 		</method>
 		<method name="create_v3_godot_bytes" qualifiers="static">
 			<return type="PackedByteArray" />
 			<param index="0" name="name" type="String" />
-			<param index="1" name="namespace_uuid" type="String" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
+			<param index="1" name="namespace_uuid" type="Variant" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
 			<description>
 				Generates a version 3 (name-based MD5) UUID as a [PackedByteArray].
 			</description>
@@ -27,9 +35,17 @@
 		<method name="create_v3_godot_string" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="name" type="String" />
-			<param index="1" name="namespace_uuid" type="String" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
+			<param index="1" name="namespace_uuid" type="Variant" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
 			<description>
 				Generates a version 3 (name-based MD5) UUID as a [String].
+			</description>
+		</method>
+		<method name="create_v3_godot_vector4i" qualifiers="static">
+			<return type="Vector4i" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="namespace_uuid" type="Variant" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
+			<description>
+				Generates a version 3 (name-based MD5) UUID as a [Vector4i].
 			</description>
 		</method>
 		<method name="create_v4_stduuid_bytes" qualifiers="static">
@@ -44,6 +60,12 @@
 				Generates a version 4 (random) UUID as a [String] using the [code]stduuid[/code] library.
 			</description>
 		</method>
+		<method name="create_v4_stduuid_vector4i" qualifiers="static">
+			<return type="Vector4i" />
+			<description>
+				Generates a version 4 (random) UUID as a [Vector4i] using the [code]stduuid[/code] library.
+			</description>
+		</method>
 		<method name="create_v4_uuidv4_bytes" qualifiers="static">
 			<return type="PackedByteArray" />
 			<description>
@@ -56,10 +78,16 @@
 				Generates a version 4 (random) UUID as a [String] using the [code]uuid_v4[/code] library.
 			</description>
 		</method>
+		<method name="create_v4_uuidv4_vector4i" qualifiers="static">
+			<return type="Vector4i" />
+			<description>
+				Generates a version 4 (random) UUID as a [Vector4i] using the [code]uuid_v4[/code] library.
+			</description>
+		</method>
 		<method name="create_v5_stduuid_bytes" qualifiers="static">
 			<return type="PackedByteArray" />
 			<param index="0" name="seed" type="String" />
-			<param index="1" name="namespace_uuid" type="String" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
+			<param index="1" name="namespace_uuid" type="Variant" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
 			<description>
 				Generates a version 5 (name-based SHA-1) UUID as a [PackedByteArray].
 			</description>
@@ -67,38 +95,63 @@
 		<method name="create_v5_stduuid_string" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="seed" type="String" />
-			<param index="1" name="namespace_uuid" type="String" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
+			<param index="1" name="namespace_uuid" type="Variant" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
 			<description>
 				Generates a version 5 (name-based SHA-1) UUID as a [String].
 			</description>
 		</method>
+		<method name="create_v5_stduuid_vector4i" qualifiers="static">
+			<return type="Vector4i" />
+			<param index="0" name="seed" type="String" />
+			<param index="1" name="namespace_uuid" type="Variant" default="&quot;00000000-0000-0000-0000-000000000000&quot;" />
+			<description>
+				Generates a version 5 (name-based SHA-1) UUID as a [Vector4i].
+			</description>
+		</method>
 		<method name="equals" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="uuid_str1" type="String" />
-			<param index="1" name="uuid_str2" type="String" />
+			<param index="0" name="uuid_a" type="Variant" />
+			<param index="1" name="uuid_b" type="Variant" />
 			<description>
-				Returns [code]true[/code] if the two UUID strings are equivalent.
+				Returns [code]true[/code] if the two UUIDs are equivalent.
 			</description>
 		</method>
-		<method name="erase_variant">
+		<method name="erase_key">
 			<return type="bool" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
-				Removes the variant associated with the given [param uuid_str] from the internal map. Returns [code]true[/code] if the key was found and removed.
+				Removes the entry for the given [param uuid] from the internal map. Returns [code]true[/code] if the key existed.
 			</description>
 		</method>
-		<method name="from_bytes" qualifiers="static">
-			<return type="String" />
-			<param index="0" name="bytes" type="PackedByteArray" />
+		<method name="erase_value">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
 			<description>
-				Converts a 16-byte [PackedByteArray] to its UUID string representation.
+				Removes all entries with the given [param value] from the internal map. Returns [code]true[/code] if any entries were removed.
 			</description>
 		</method>
-		<method name="from_vector4i" qualifiers="static">
-			<return type="String" />
-			<param index="0" name="vec" type="Vector4i" />
+		<method name="get_keys_as_bytes" qualifiers="const">
+			<return type="PackedByteArray" />
 			<description>
-				Converts a [Vector4i] (treating its 4 integers as 16 bytes) to its UUID string representation.
+				Returns all keys in the internal map as a concatenated [PackedByteArray] of UUID bytes.
+			</description>
+		</method>
+		<method name="get_keys_as_strings" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns all keys in the internal map as a [PackedStringArray] of UUID strings.
+			</description>
+		</method>
+		<method name="get_keys_as_vector4i" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns all keys in the internal map as an [Array] of [Vector4i].
+			</description>
+		</method>
+		<method name="get_map_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of entries in the internal map.
 			</description>
 		</method>
 		<method name="get_max_uuid" qualifiers="static">
@@ -139,43 +192,44 @@
 		</method>
 		<method name="get_uuid_variant" qualifiers="static">
 			<return type="int" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
 				Returns the variant of the UUID (e.g., RFC 4122).
 			</description>
 		</method>
-		<method name="get_variant" qualifiers="const">
+		<method name="get_uuid_version" qualifiers="static">
+			<return type="int" />
+			<param index="0" name="uuid" type="Variant" />
+			<description>
+				Returns the version number of the given [param uuid].
+			</description>
+		</method>
+		<method name="get_value" qualifiers="const">
 			<return type="Variant" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<param index="1" name="default_value" type="Variant" default="null" />
 			<description>
-				Returns the [Variant] associated with [param uuid_str] in the internal map, or [param default_value] if not found.
+				Returns the value associated with the given [param uuid], or [param default_value] if the key is not found.
 			</description>
 		</method>
-		<method name="get_variant_keys" qualifiers="const">
+		<method name="get_values" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns an [Array] of all UUID strings used as keys in the internal map.
+				Returns an [Array] of all values stored in the internal map.
 			</description>
 		</method>
-		<method name="get_variant_map_size" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of entries in the internal variant map.
-			</description>
-		</method>
-		<method name="get_version" qualifiers="static">
-			<return type="int" />
-			<param index="0" name="uuid_str" type="String" />
-			<description>
-				Returns the version number of the UUID (1 to 5). Returns [constant NONE] (0) if the version cannot be determined or is invalid.
-			</description>
-		</method>
-		<method name="has_variant" qualifiers="const">
+		<method name="has_key" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
-				Returns [code]true[/code] if the internal map contains an entry for [param uuid_str].
+				Returns [code]true[/code] if the internal map contains the given [param uuid].
+			</description>
+		</method>
+		<method name="has_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Returns [code]true[/code] if the internal map contains the given [param value].
 			</description>
 		</method>
 		<method name="hash_uuid" qualifiers="static">
@@ -187,38 +241,37 @@
 		</method>
 		<method name="is_nil" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
-				Returns [code]true[/code] if the given [param uuid_str] is the Nil UUID.
+				Returns [code]true[/code] if the given [param uuid] is the Nil UUID.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
-				Returns [code]true[/code] if [param uuid_str] is a syntactically valid UUID string.
+				Returns [code]true[/code] if [param uuid] is a syntactically valid UUID (string, byte array, or [Vector4i]).
 			</description>
 		</method>
-		<method name="set_variant">
-			<return type="bool" />
-			<param index="0" name="uuid_str" type="String" />
-			<param index="1" name="value" type="Variant" />
-			<description>
-				Sets a [Variant] value for the given [param uuid_str] in the internal map. Returns [code]true[/code] if [param uuid_str] is a valid UUID and the value was set.
-			</description>
-		</method>
-		<method name="to_bytes" qualifiers="static">
+		<method name="to_bytes_from_variant" qualifiers="static">
 			<return type="PackedByteArray" />
-			<param index="0" name="uuid_str" type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
-				Converts a UUID string to its 16-byte [PackedByteArray] representation.
+				Converts the given [param uuid] (string, byte array, or [Vector4i]) to a [PackedByteArray].
 			</description>
 		</method>
-		<method name="to_vector4i" qualifiers="static">
-			<return type="Vector4i" />
-			<param index="0" name="uuid_str" type="String" />
+		<method name="to_string_from_variant" qualifiers="static">
+			<return type="String" />
+			<param index="0" name="uuid" type="Variant" />
 			<description>
-				Converts a UUID string to a [Vector4i] representation (4 x 32-bit integers).
+				Converts the given [param uuid] (string, byte array, or [Vector4i]) to a standard UUID string.
+			</description>
+		</method>
+		<method name="to_vector4i_from_variant" qualifiers="static">
+			<return type="Vector4i" />
+			<param index="0" name="uuid" type="Variant" />
+			<description>
+				Converts the given [param uuid] (string, byte array, or [Vector4i]) to a [Vector4i].
 			</description>
 		</method>
 	</methods>

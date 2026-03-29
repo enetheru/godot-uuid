@@ -10,135 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_AABB">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="aabb" type="AABB" />
-			<description>
-				Adds an [AABB] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Basis">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="basis" type="Basis" />
-			<description>
-				Adds a [Basis] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Color">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="color" type="Color" />
-			<description>
-				Adds a [Color] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Plane">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="plane" type="Plane" />
-			<description>
-				Adds a [Plane] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Projection">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="projection" type="Projection" />
-			<description>
-				Adds a [Projection] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Quaternion">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="quaternion" type="Quaternion" />
-			<description>
-				Adds a [Quaternion] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Rect2">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="rect2" type="Rect2" />
-			<description>
-				Adds a [Rect2] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Rect2i">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="rect2i" type="Rect2i" />
-			<description>
-				Adds a [Rect2i] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Transform2D">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="transform2d" type="Transform2D" />
-			<description>
-				Adds a [Transform2D] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Transform3D">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="transform3d" type="Transform3D" />
-			<description>
-				Adds a [Transform3D] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Vector2">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="vector2" type="Vector2" />
-			<description>
-				Adds a [Vector2] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Vector2i">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="vector2i" type="Vector2i" />
-			<description>
-				Adds a [Vector2i] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Vector3">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="vector3" type="Vector3" />
-			<description>
-				Adds a [Vector3] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Vector3i">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="vector3i" type="Vector3i" />
-			<description>
-				Adds a [Vector3i] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Vector4">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="vector4" type="Vector4" />
-			<description>
-				Adds a [Vector4] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_Vector4i">
-			<return type="void" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="vector4i" type="Vector4i" />
-			<description>
-				Adds a [Vector4i] struct to the current table at [param voffset].
-			</description>
-		</method>
-		<method name="add_bytes">
+		<method name="add_bytes" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="voffset" type="int" />
 			<param index="1" name="value" type="PackedByteArray" />
@@ -333,7 +205,7 @@
 				Adds an unsigned 16-bit integer element to the current table at [param voffset], but only if it differs from the [param default] value.
 			</description>
 		</method>
-		<method name="add_offset">
+		<method name="add_offset" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="voffset" type="int" />
 			<param index="1" name="value" type="int" />
@@ -341,7 +213,16 @@
 				Adds an offset field to the current table at [param voffset].
 			</description>
 		</method>
-		<method name="clear">
+		<method name="add_variant" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="voffset" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="type" type="int" enum="Variant.Type" default="39" />
+			<description>
+				Adds a Godot [Variant] of the given [param type] to the current table at [param voffset]. Supported types include scalars and Godot structs (Vector2, Rect2, Color, etc.).
+			</description>
+		</method>
+		<method name="clear" qualifiers="const">
 			<return type="void" />
 			<description>
 				Clears the builder, resetting its internal state but keeping the allocated buffer.
@@ -349,198 +230,17 @@
 		</method>
 		<method name="create" qualifiers="static">
 			<return type="FlatBufferBuilder" />
-			<param index="0" name="size" type="int" />
+			<param index="0" name="size" type="int" default="1024" />
 			<description>
 				Creates a new [FlatBufferBuilder] with an initial buffer [param size].
 			</description>
 		</method>
-		<method name="create_AABB">
+		<method name="create_variant" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="aabb" type="AABB" />
+			<param index="0" name="value" type="Variant" />
+			<param index="1" name="type" type="int" enum="Variant.Type" default="39" />
 			<description>
-				Creates an [AABB] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Basis">
-			<return type="int" />
-			<param index="0" name="basis" type="Basis" />
-			<description>
-				Creates a [Basis] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Color">
-			<return type="int" />
-			<param index="0" name="color" type="Color" />
-			<description>
-				Creates a [Color] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedByteArray">
-			<return type="int" />
-			<param index="0" name="array" type="Array" />
-			<description>
-				Creates a vector of bytes from an [Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedColorArray" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="array" type="PackedColorArray" />
-			<description>
-				Creates a vector of [Color] structs from a [PackedColorArray] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedFloat32Array">
-			<return type="int" />
-			<param index="0" name="array" type="Array" />
-			<description>
-				Creates a vector of 32-bit floats from an [Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedFloat64Array">
-			<return type="int" />
-			<param index="0" name="array" type="Array" />
-			<description>
-				Creates a vector of 64-bit floats from an [Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedInt32Array">
-			<return type="int" />
-			<param index="0" name="array" type="Array" />
-			<description>
-				Creates a vector of 32-bit integers from an [Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedInt64Array">
-			<return type="int" />
-			<param index="0" name="array" type="Array" />
-			<description>
-				Creates a vector of 64-bit integers from an [Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedStringArray" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="array" type="PackedStringArray" />
-			<description>
-				Creates a vector of strings from a [PackedStringArray] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedVector2Array" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="array" type="PackedVector2Array" />
-			<description>
-				Creates a vector of [Vector2] structs from a [PackedVector2Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedVector3Array" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="array" type="PackedVector3Array" />
-			<description>
-				Creates a vector of [Vector3] structs from a [PackedVector3Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_PackedVector4Array" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="array" type="PackedVector4Array" />
-			<description>
-				Creates a vector of [Vector4] structs from a [PackedVector4Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_Plane">
-			<return type="int" />
-			<param index="0" name="plane" type="Plane" />
-			<description>
-				Creates a [Plane] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Projection">
-			<return type="int" />
-			<param index="0" name="projection" type="Projection" />
-			<description>
-				Creates a [Projection] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Quaternion">
-			<return type="int" />
-			<param index="0" name="quaternion" type="Quaternion" />
-			<description>
-				Creates a [Quaternion] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Rect2">
-			<return type="int" />
-			<param index="0" name="rect2" type="Rect2" />
-			<description>
-				Creates a [Rect2] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Rect2i">
-			<return type="int" />
-			<param index="0" name="rect2i" type="Rect2i" />
-			<description>
-				Creates a [Rect2i] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_String" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="string" type="String" />
-			<description>
-				Creates a string in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Transform2D">
-			<return type="int" />
-			<param index="0" name="transform2d" type="Transform2D" />
-			<description>
-				Creates a [Transform2D] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Transform3D">
-			<return type="int" />
-			<param index="0" name="transform3d" type="Transform3D" />
-			<description>
-				Creates a [Transform3D] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Vector2">
-			<return type="int" />
-			<param index="0" name="vector2" type="Vector2" />
-			<description>
-				Creates a [Vector2] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Vector2i">
-			<return type="int" />
-			<param index="0" name="vector2i" type="Vector2i" />
-			<description>
-				Creates a [Vector2i] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Vector3">
-			<return type="int" />
-			<param index="0" name="vector3" type="Vector3" />
-			<description>
-				Creates a [Vector3] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Vector3i">
-			<return type="int" />
-			<param index="0" name="vector3i" type="Vector3i" />
-			<description>
-				Creates a [Vector3i] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Vector4">
-			<return type="int" />
-			<param index="0" name="vector4" type="Vector4" />
-			<description>
-				Creates a [Vector4] struct in the buffer and returns its offset.
-			</description>
-		</method>
-		<method name="create_Vector4i">
-			<return type="int" />
-			<param index="0" name="vector4i" type="Vector4i" />
-			<description>
-				Creates a [Vector4i] struct in the buffer and returns its offset.
+				Encodes a Godot [Variant] (like String or PackedArray) as a FlatBuffer offset and returns it.
 			</description>
 		</method>
 		<method name="create_vector_float32">
@@ -585,19 +285,35 @@
 				Creates a vector of 64-bit signed integers from an [Array] and returns its offset.
 			</description>
 		</method>
+		<method name="create_vector_of_custom_struct" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="array" type="Array" />
+			<param index="1" name="element_size" type="int" />
+			<description>
+				Creates a vector of custom FlatBuffer structs from an [Array] of [PackedByteArray] (each representing a struct). [param element_size] must match the struct's size in bytes.
+			</description>
+		</method>
+		<method name="create_vector_of_table" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="array" type="Array" />
+			<param index="1" name="create_func" type="Callable" />
+			<description>
+				Creates a vector of tables by calling [param create_func] for each element in [param array].
+			</description>
+		</method>
+		<method name="create_vector_of_union" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="array" type="Array" />
+			<param index="1" name="create_func" type="Callable" />
+			<description>
+				Creates a vector of unions by calling [param create_func] for each element in [param array]. Returns a [PackedInt32Array] containing two offsets: the vector of types and the vector of values.
+			</description>
+		</method>
 		<method name="create_vector_offset" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="array" type="PackedInt32Array" />
 			<description>
 				Creates a vector of offsets from a [PackedInt32Array] and returns its offset.
-			</description>
-		</method>
-		<method name="create_vector_table" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="array" type="Array" />
-			<param index="1" name="constructor" type="Callable" />
-			<description>
-				Creates a vector of tables by calling the [param constructor] for each element in the [param array]. Returns the offset of the vector.
 			</description>
 		</method>
 		<method name="create_vector_uint8">
@@ -628,18 +344,24 @@
 				Creates a vector of 64-bit unsigned integers from an [Array] and returns its offset.
 			</description>
 		</method>
-		<method name="end_table">
+		<method name="end_table" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="start" type="int" />
 			<description>
 				Ends building a table and returns its offset. [param start] is the value returned by [method start_table].
 			</description>
 		</method>
-		<method name="finish">
+		<method name="finish" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="table_offset" type="int" />
 			<description>
 				Finishes building the buffer, setting the provided [param table_offset] as the root of the FlatBuffer.
+			</description>
+		</method>
+		<method name="get_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the finished buffer as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -648,22 +370,16 @@
 				Returns the current size of the built buffer.
 			</description>
 		</method>
-		<method name="reset">
+		<method name="reset" qualifiers="const">
 			<return type="void" />
 			<description>
 				Resets the builder and its internal buffer.
 			</description>
 		</method>
-		<method name="start_table">
+		<method name="start_table" qualifiers="const">
 			<return type="int" />
 			<description>
 				Starts building a table.
-			</description>
-		</method>
-		<method name="to_packed_byte_array" qualifiers="const">
-			<return type="PackedByteArray" />
-			<description>
-				Returns the finished FlatBuffer data as a [PackedByteArray].
 			</description>
 		</method>
 	</methods>

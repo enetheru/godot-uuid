@@ -1,707 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FlatBuffer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-        Abstract base class for interpreting flatbuffer serialised data.
-    </brief_description>
+		Abstract base class for interpreting flatbuffer serialised data.
+	</brief_description>
 	<description>
-        This base class is to be overridden by code generated from the flatc schema compiler.
-        It provides utilities for the generated gdscript overloads to interpret binary data in [member bytes] in the
-        manner described schema file.
-        This [FlatBuffer] object is a non owning view of the [PackedByteArray].
+		This base class is to be overridden by code generated from the flatc schema compiler.
+		It provides utilities for the generated gdscript overloads to interpret binary data in [member _fb_bytes] in the manner described by the schema file.
+		This [FlatBuffer] object is a non-owning view of the [PackedByteArray].
 	</description>
 	<tutorials>
-        <link title="Rudimentary Example">https://github.com/enetheru/godot-flatbuffers/blob/main/README.md</link>
-        <link title="Official Flatbuffer Documentation">https://flatbuffers.dev/</link>
+		<link title="Rudimentary Example">https://github.com/enetheru/godot-flatbuffers/blob/main/README.md</link>
+		<link title="Official Flatbuffer Documentation">https://flatbuffers.dev/</link>
 	</tutorials>
 	<methods>
-		<method name="at_AABB" qualifiers="const">
-			<return type="AABB" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
+		<method name="assign_buffer">
+			<return type="void" />
+			<param index="0" name="bytes" type="Variant" />
+			<param index="1" name="offset" type="int" />
 			<description>
-				Returns the [AABB] at [param index] in the vector field at [param voffset].
+				Assigns a new buffer (as a [PackedByteArray]) and its starting [param offset] to this [FlatBuffer] object.
 			</description>
 		</method>
-		<method name="at_Basis" qualifiers="const">
-			<return type="Basis" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
+		<method name="decode_variant" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="start" type="int" />
+			<param index="1" name="expected_type" type="int" enum="Variant.Type" />
 			<description>
-				Returns the [Basis] at [param index] in the vector field at [param voffset].
+				Decodes a [Variant] of the [param expected_type] from the buffer starting at [param start].
 			</description>
 		</method>
-		<method name="at_Color" qualifiers="const">
-			<return type="Color" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Color] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_PackedByteArray" qualifiers="const">
-			<return type="PackedByteArray" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [PackedByteArray] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_PackedFloat32Array" qualifiers="const">
-			<return type="PackedFloat32Array" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [PackedFloat32Array] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_PackedFloat64Array" qualifiers="const">
-			<return type="PackedFloat64Array" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [PackedFloat64Array] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_PackedInt32Array" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [PackedInt32Array] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_PackedInt64Array" qualifiers="const">
-			<return type="PackedInt64Array" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [PackedInt64Array] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_PackedStringArray" qualifiers="const">
-			<return type="PackedStringArray" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [PackedStringArray] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Plane" qualifiers="const">
-			<return type="Plane" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Plane] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Projection" qualifiers="const">
-			<return type="Projection" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Projection] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Quaternion" qualifiers="const">
-			<return type="Quaternion" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Quaternion] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Rect2" qualifiers="const">
-			<return type="Rect2" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Rect2] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Rect2i" qualifiers="const">
-			<return type="Rect2i" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Rect2i] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_String" qualifiers="const">
-			<return type="String" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [String] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Transform2D" qualifiers="const">
-			<return type="Transform2D" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Transform2D] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Transform3D" qualifiers="const">
-			<return type="Transform3D" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Transform3D] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Vector2" qualifiers="const">
-			<return type="Vector2" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Vector2] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Vector2i" qualifiers="const">
-			<return type="Vector2i" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Vector2i] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Vector3" qualifiers="const">
-			<return type="Vector3" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Vector3] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Vector3i" qualifiers="const">
-			<return type="Vector3i" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Vector3i] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Vector4" qualifiers="const">
-			<return type="Vector4" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Vector4] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="at_Vector4i" qualifiers="const">
-			<return type="Vector4i" />
-			<param index="0" name="voffset" type="int" />
-			<param index="1" name="index" type="int" />
-			<description>
-				Returns the [Vector4i] at [param index] in the vector field at [param voffset].
-			</description>
-		</method>
-		<method name="decode_AABB" qualifiers="const">
-			<return type="AABB" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes an [AABB] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Basis" qualifiers="const">
-			<return type="Basis" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Basis] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Color" qualifiers="const">
-			<return type="Color" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Color] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_PackedByteArray" qualifiers="const">
-			<return type="PackedByteArray" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [PackedByteArray] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_PackedFloat32Array" qualifiers="const">
-			<return type="PackedFloat32Array" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [PackedFloat32Array] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_PackedFloat64Array" qualifiers="const">
-			<return type="PackedFloat64Array" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [PackedFloat64Array] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_PackedInt32Array" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [PackedInt32Array] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_PackedInt64Array" qualifiers="const">
-			<return type="PackedInt64Array" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [PackedInt64Array] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_PackedStringArray" qualifiers="const">
-			<return type="PackedStringArray" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [PackedStringArray] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Plane" qualifiers="const">
-			<return type="Plane" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Plane] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Projection" qualifiers="const">
-			<return type="Projection" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Projection] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Quaternion" qualifiers="const">
-			<return type="Quaternion" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Quaternion] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Rect2" qualifiers="const">
-			<return type="Rect2" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Rect2] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Rect2i" qualifiers="const">
-			<return type="Rect2i" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Rect2i] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_String" qualifiers="const">
-			<return type="String" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [String] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Transform2D" qualifiers="const">
-			<return type="Transform2D" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Transform2D] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Transform3D" qualifiers="const">
-			<return type="Transform3D" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Transform3D] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Vector2" qualifiers="const">
-			<return type="Vector2" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Vector2] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Vector2i" qualifiers="const">
-			<return type="Vector2i" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Vector2i] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Vector3" qualifiers="const">
-			<return type="Vector3" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Vector3] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Vector3i" qualifiers="const">
-			<return type="Vector3i" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Vector3i] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Vector4" qualifiers="const">
-			<return type="Vector4" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Vector4] starting at [param start_].
-			</description>
-		</method>
-		<method name="decode_Vector4i" qualifiers="const">
-			<return type="Vector4i" />
-			<param index="0" name="start_" type="int" />
-			<description>
-				Decodes a [Vector4i] starting at [param start_].
-			</description>
-		</method>
-		<method name="encode_AABB">
+		<method name="encode_variant">
 			<return type="void" />
 			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="AABB" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="expected_type" type="int" enum="Variant.Type" default="39" />
 			<description>
-				Encodes an [AABB] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Basis">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Basis" />
-			<description>
-				Encodes a [Basis] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Color">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Color" />
-			<description>
-				Encodes a [Color] at [param start_].
-			</description>
-		</method>
-		<method name="encode_PackedByteArray">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="PackedByteArray" />
-			<description>
-				Encodes a [PackedByteArray] at [param start_].
-			</description>
-		</method>
-		<method name="encode_PackedFloat32Array">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="PackedFloat32Array" />
-			<description>
-				Encodes a [PackedFloat32Array] at [param start_].
-			</description>
-		</method>
-		<method name="encode_PackedFloat64Array">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="PackedFloat64Array" />
-			<description>
-				Encodes a [PackedFloat64Array] at [param start_].
-			</description>
-		</method>
-		<method name="encode_PackedInt32Array">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="PackedInt32Array" />
-			<description>
-				Encodes a [PackedInt32Array] at [param start_].
-			</description>
-		</method>
-		<method name="encode_PackedInt64Array">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="PackedInt64Array" />
-			<description>
-				Encodes a [PackedInt64Array] at [param start_].
-			</description>
-		</method>
-		<method name="encode_PackedStringArray">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="PackedStringArray" />
-			<description>
-				Encodes a [PackedStringArray] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Plane">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Plane" />
-			<description>
-				Encodes a [Plane] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Projection">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Projection" />
-			<description>
-				Encodes a [Projection] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Quaternion">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Quaternion" />
-			<description>
-				Encodes a [Quaternion] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Rect2">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Rect2" />
-			<description>
-				Encodes a [Rect2] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Rect2i">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Rect2i" />
-			<description>
-				Encodes a [Rect2i] at [param start_].
-			</description>
-		</method>
-		<method name="encode_String">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="String" />
-			<description>
-				Encodes a [String] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Transform2D">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Transform2D" />
-			<description>
-				Encodes a [Transform2D] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Transform3D">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Transform3D" />
-			<description>
-				Encodes a [Transform3D] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Vector2">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Vector2" />
-			<description>
-				Encodes a [Vector2] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Vector2i">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Vector2i" />
-			<description>
-				Encodes a [Vector2i] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Vector3">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Vector3" />
-			<description>
-				Encodes a [Vector3] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Vector3i">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Vector3i" />
-			<description>
-				Encodes a [Vector3i] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Vector4">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Vector4" />
-			<description>
-				Encodes a [Vector4] at [param start_].
-			</description>
-		</method>
-		<method name="encode_Vector4i">
-			<return type="void" />
-			<param index="0" name="start_" type="int" />
-			<param index="1" name="value" type="Vector4i" />
-			<description>
-				Encodes a [Vector4i] at [param start_].
-			</description>
-		</method>
-		<method name="get_AABB" qualifiers="const">
-			<return type="AABB" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [AABB] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Basis" qualifiers="const">
-			<return type="Basis" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Basis] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Color" qualifiers="const">
-			<return type="Color" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Color] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_PackedByteArray" qualifiers="const">
-			<return type="PackedByteArray" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [PackedByteArray] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_PackedFloat32Array" qualifiers="const">
-			<return type="PackedFloat32Array" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [PackedFloat32Array] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_PackedFloat64Array" qualifiers="const">
-			<return type="PackedFloat64Array" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [PackedFloat64Array] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_PackedInt32Array" qualifiers="const">
-			<return type="PackedInt32Array" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [PackedInt32Array] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_PackedInt64Array" qualifiers="const">
-			<return type="PackedInt64Array" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [PackedInt64Array] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_PackedStringArray" qualifiers="const">
-			<return type="PackedStringArray" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [PackedStringArray] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Plane" qualifiers="const">
-			<return type="Plane" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Plane] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Projection" qualifiers="const">
-			<return type="Projection" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Projection] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Quaternion" qualifiers="const">
-			<return type="Quaternion" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Quaternion] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Rect2" qualifiers="const">
-			<return type="Rect2" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Rect2] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Rect2i" qualifiers="const">
-			<return type="Rect2i" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Rect2i] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_String" qualifiers="const">
-			<return type="String" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [String] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Transform2D" qualifiers="const">
-			<return type="Transform2D" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Transform2D] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Transform3D" qualifiers="const">
-			<return type="Transform3D" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Transform3D] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Vector2" qualifiers="const">
-			<return type="Vector2" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Vector2] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Vector2i" qualifiers="const">
-			<return type="Vector2i" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Vector2i] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Vector3" qualifiers="const">
-			<return type="Vector3" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Vector3] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Vector3i" qualifiers="const">
-			<return type="Vector3i" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Vector3i] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Vector4" qualifiers="const">
-			<return type="Vector4" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Vector4] at field [param voffset].
-			</description>
-		</method>
-		<method name="get_Vector4i" qualifiers="const">
-			<return type="Vector4i" />
-			<param index="0" name="voffset" type="int" />
-			<description>
-				Returns the [Vector4i] at field [param voffset].
+				Encodes a [Variant] [param value] into the buffer at [param start_].
 			</description>
 		</method>
 		<method name="get_array_element_start" qualifiers="const">
@@ -721,16 +55,40 @@
 		</method>
 		<method name="get_field_offset" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="vtable_offset" type="int" />
+			<param index="0" name="vtable_pos" type="int" />
 			<description>
-				Returns the offset for the field at [param vtable_offset]. Returns 0 if the field is not present.
+				Returns the offset for the field at [param vtable_pos]. Returns 0 if the field is not present.
 			</description>
 		</method>
-		<method name="get_field_start" qualifiers="const">
+		<method name="get_inline_field_start" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="field_offset" type="int" />
+			<param index="0" name="vtable_pos" type="int" />
 			<description>
-				Returns the absolute starting position in the buffer for the field at [param field_offset].
+				Returns the starting position of an inline field (like a scalar or a struct) at [param vtable_pos].
+			</description>
+		</method>
+		<method name="get_offset_field_start" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="vtable_pos" type="int" />
+			<description>
+				Returns the absolute starting position of a field that is stored as an offset (like a string, table, or vector) at [param vtable_pos].
+			</description>
+		</method>
+		<method name="get_root" qualifiers="static">
+			<return type="FlatBuffer" />
+			<param index="0" name="buffer" type="Variant" />
+			<param index="1" name="script" type="Variant" />
+			<description>
+				Static helper to create a new [FlatBuffer] instance for the root table in [param buffer], using the provided [param script].
+			</description>
+		</method>
+		<method name="get_variant_at" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="vt_enum" type="int" />
+			<param index="1" name="index" type="int" />
+			<param index="2" name="expected_type" type="int" enum="Variant.Type" />
+			<description>
+				Returns the [Variant] at [param index] in the vector field at [param vt_enum], expected to be of [param expected_type].
 			</description>
 		</method>
 		<method name="overwrite_bytes" qualifiers="const">
@@ -741,6 +99,13 @@
 			<param index="3" name="size" type="int" />
 			<description>
 				Overwrites [param size] bytes from [param source] (starting at [param from]) into the buffer at [param to].
+			</description>
+		</method>
+		<method name="verify_end_table" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<description>
+				Verifies the end of a table using the provided [param verifier].
 			</description>
 		</method>
 		<method name="verify_field_double" qualifiers="const">
@@ -833,11 +198,114 @@
 				Verifies an unsigned 64-bit integer field.
 			</description>
 		</method>
+		<method name="verify_offset" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+				Verifies that an offset field at [param field] is valid.
+			</description>
+		</method>
+		<method name="verify_string" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+				Verifies a string field at [param field].
+			</description>
+		</method>
 		<method name="verify_table_start" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="verifier" type="FlatBufferVerifier" />
 			<description>
 				Verifies the start of a table.
+			</description>
+		</method>
+		<method name="verify_variant" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<param index="2" name="type" type="int" enum="Variant.Type" />
+			<description>
+				Verifies a [Variant] field of the given [param type].
+			</description>
+		</method>
+		<method name="verify_vector_double" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_float" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_of_variant" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<param index="2" name="type" type="int" enum="Variant.Type" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_s8" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_s16" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_s32" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_s64" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_u8" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_u16" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_u32" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="verify_vector_u64" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="verifier" type="FlatBufferVerifier" />
+			<param index="1" name="field" type="int" />
+			<description>
 			</description>
 		</method>
 	</methods>
