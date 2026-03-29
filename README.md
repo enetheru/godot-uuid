@@ -30,9 +30,9 @@ Due to the work in progress nature, there are no release binaries yet.
 
 I've tried to make compilation as straight forward as possible, dependencies are pulled using CMake's FetchContent.
 
-After CMake configure completes, you will need to build two targets: `flatc` and `gdflatbuffers`
+After CMake configure completes, you will need to build two targets: `flatc` and `godot-flatbuffers`
 
-Then copy or link the `project/addons/gdflatbuffers` folder into your `project/addons` folder
+Then copy or link the `project/addons/enetheru.flatbuffers-extension` folder into your `project/addons` folder
 
 I do know that at least on windows `flatc` builds using mingw, if you run into trouble please hit me up in issues, or in godot discord gdextension/c++ channels linked at the bottom of this document.
 
