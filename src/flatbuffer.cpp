@@ -18,27 +18,69 @@ godot::String FlatBuffer::get_memory_address() const {
 #include "godot_cpp/variant/variant_internal.hpp"
 
 namespace godot_flatbuffers {
+// Value, Variant::Type, c++ type
+#define GODOT_TYPES_SCALAR(TD) \
+TD(  0, godot::Variant::NIL,                   nullptr) \
+TD(  1, godot::Variant::BOOL,                  bool) \
+TD(  2, godot::Variant::INT,                   int) \
+TD(  3, godot::Variant::FLOAT,                 float)
+#define GODOT_TYPES_STRING(TD) \
+TD(  4, godot::Variant::STRING,                godot::String) \
+TD( 21, godot::Variant::STRING_NAME,           godot::StringName) \
+TD( 22, godot::Variant::NODE_PATH,             godot::NodePath)
+#define GODOT_TYPES_STRUCT(TD) \
+TD(  5, godot::Variant::VECTOR2,               godot::Vector2) \
+TD(  6, godot::Variant::VECTOR2I,              godot::Vector2i) \
+TD(  7, godot::Variant::RECT2,                 godot::Rect2) \
+TD(  8, godot::Variant::RECT2I,                godot::Rect2i) \
+TD(  9, godot::Variant::VECTOR3,               godot::Vector3) \
+TD( 10, godot::Variant::VECTOR3I,              godot::Vector3i) \
+TD( 11, godot::Variant::TRANSFORM2D,           godot::Transform2D) \
+TD( 12, godot::Variant::VECTOR4,               godot::Vector4) \
+TD( 13, godot::Variant::VECTOR4I,              godot::Vector4i) \
+TD( 14, godot::Variant::PLANE,                 godot::Plane) \
+TD( 15, godot::Variant::QUATERNION,            godot::Quaternion) \
+TD( 16, godot::Variant::AABB,                  godot::AABB) \
+TD( 17, godot::Variant::BASIS,                 godot::Basis) \
+TD( 18, godot::Variant::TRANSFORM3D,           godot::Transform3D) \
+TD( 19, godot::Variant::PROJECTION,            godot::Projection) \
+TD( 20, godot::Variant::COLOR,                 godot::Color)
+#define GODOT_TYPES_ARRAY(TD) \
+TD( 29, godot::Variant::PACKED_BYTE_ARRAY,     godot::PackedByteArray) \
+TD( 30, godot::Variant::PACKED_INT32_ARRAY,    godot::PackedInt32Array) \
+TD( 31, godot::Variant::PACKED_INT64_ARRAY,    godot::PackedInt64Array) \
+TD( 32, godot::Variant::PACKED_FLOAT32_ARRAY,  godot::PackedFloat32Array) \
+TD( 33, godot::Variant::PACKED_FLOAT64_ARRAY,  godot::PackedFloat64Array) \
+TD( 34, godot::Variant::PACKED_STRING_ARRAY,   godot::PackedStringArray) \
+TD( 35, godot::Variant::PACKED_VECTOR2_ARRAY,  godot::PackedVector2Array) \
+TD( 36, godot::Variant::PACKED_VECTOR3_ARRAY,  godot::PackedVector3Array) \
+TD( 37, godot::Variant::PACKED_COLOR_ARRAY,    godot::PackedColorArray) \
+TD( 38, godot::Variant::PACKED_VECTOR4_ARRAY,  godot::PackedVector4Array)
+#define GODOT_TYPES_OTHER(TD) \
+TD( 23, godot::Variant::RID,                   godot::Rid) \
+TD( 24, godot::Variant::OBJECT,                godot::Object) \
+TD( 25, godot::Variant::CALLABLE,              godot::Callable) \
+TD( 26, godot::Variant::SIGNAL,                godot::Signal) \
+TD( 27, godot::Variant::DICTIONARY,            godot::Dictionary) \
+TD( 28, godot::Variant::ARRAY,                 godot::Array) \
+TD( 39, godot::Variant::VARIANT_MAX,           nullptr)
+
+#define GODOT_TYPES(TD) \
+GODOT_TYPES_SCALAR(TD) \
+GODOT_TYPES_STRING(TD) \
+GODOT_TYPES_STRUCT(TD) \
+GODOT_TYPES_ARRAY(TD) \
+GODOT_TYPES_OTHER(TD)
 
 // Get the size of the godot variant types as they are expressed in the
 // flatbuffer.
 size_t get_variant_struct_size(const godot::Variant::Type type ) {
   switch( type ) {
-    case godot::Variant::VECTOR2:return sizeof(godot::Vector2);
-    case godot::Variant::VECTOR2I:return sizeof(godot::Vector2i);
-    case godot::Variant::RECT2:return sizeof(godot::Rect2);
-    case godot::Variant::RECT2I:return sizeof(godot::Rect2i);
-    case godot::Variant::VECTOR3:return sizeof(godot::Vector3);
-    case godot::Variant::VECTOR3I:return sizeof(godot::Vector3i);
-    case godot::Variant::TRANSFORM2D:return sizeof(godot::Transform2D);
-    case godot::Variant::VECTOR4:return sizeof(godot::Vector4);
-    case godot::Variant::VECTOR4I:return sizeof(godot::Vector4i);
-    case godot::Variant::PLANE:return sizeof(godot::Plane);
-    case godot::Variant::QUATERNION:return sizeof(godot::Quaternion);
-    case godot::Variant::AABB:return sizeof(godot::AABB);
-    case godot::Variant::BASIS:return sizeof(godot::Basis);
-    case godot::Variant::TRANSFORM3D:return sizeof(godot::Transform3D);
-    case godot::Variant::PROJECTION:return sizeof(godot::Projection);
-    case godot::Variant::COLOR:return sizeof(godot::Color);
+    //Struct Types
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: return sizeof(TYPE);
+    GODOT_TYPES_STRUCT(GODOT_TD)
+#undef GODOT_TD
     default:;
   }
   return -1;
@@ -102,7 +144,6 @@ slice_packed_bytes(const godot::PackedByteArray *bytes, uint32_t start, const si
 }
 
 
-
 // MARK: Specialisation
 // ║ ___              _      _ _          _   _
 // ║/ __|_ __  ___ __(_)__ _| (_)___ __ _| |_(_)___ _ _
@@ -116,14 +157,6 @@ auto FlatBuffer::decode_gtype( const int64_t start_ ) const -> godot::PackedByte
   const int64_t array_start = start_ + 4;
   return fb_bytes->slice( array_start, array_start + size );
 }
-
-
-
-// // Ony a few of these functions exist in 'godot_cpp\variant\packed_byte_array.hpp'
-// DECODE_PACKED_GTYPE( PackedFloat32Array, float, to_float32_array )
-// DECODE_PACKED_GTYPE( PackedFloat64Array, double, to_float64_array )
-// DECODE_PACKED_GTYPE( PackedInt32Array, uint32_t, to_int32_array )
-// DECODE_PACKED_GTYPE( PackedInt64Array, uint64_t, to_int64_array )
 
 
 template<> [[nodiscard]]
@@ -233,6 +266,7 @@ void FlatBuffer::_bind_methods() {
   ClassDB::bind_method( D_METHOD( "verify_vector_double", "verifier", "field" ), &FlatBuffer::verify_vector<double>);
 
   ClassDB::bind_method( D_METHOD( "verify_vector_of_variant", "verifier", "field", "type" ), &FlatBuffer::verify_vector_of_variant);
+  ClassDB::bind_method( D_METHOD( "verify_vector", "verifier", "field_offset", "size", "required" ), &FlatBuffer::verify_vector2);
 }
 
 /// Static factory for fetching the buffer as root. takes a variant so that we
@@ -265,8 +299,7 @@ auto FlatBuffer::overwrite_bytes(godot::Variant source, const int from, const in
   return godot::OK;
 }
 
-auto FlatBuffer::encode_variant(const int64_t start, const godot::Variant &value, godot::Variant::Type expected_type)
-        -> void {
+void FlatBuffer::encode_variant(const int64_t start, const godot::Variant &value, godot::Variant::Type expected_type) {
   if( expected_type == godot::Variant::Type::VARIANT_MAX ) {
     expected_type = value.get_type();
   } else {
@@ -278,99 +311,24 @@ auto FlatBuffer::encode_variant(const int64_t start, const godot::Variant &value
   }
 
   switch( expected_type ) {
-    case godot::Variant::NIL:
-      break;
-    case godot::Variant::BOOL:
-      break;
-    case godot::Variant::INT:
-      break;
-    case godot::Variant::FLOAT:
-      break;
+    case godot::Variant::NIL: break;
+    case godot::Variant::BOOL:break;
+    case godot::Variant::INT:break;
+    case godot::Variant::FLOAT:break;
     case godot::Variant::STRING: {
       const auto v = static_cast< godot::String >(value);
       encode_gtype(start, v);
       break;
     }
-    case godot::Variant::VECTOR2: {
-      const auto v = static_cast< godot::Vector2 >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::VECTOR2I: {
-      const auto v = static_cast< godot::Vector2i >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::RECT2: {
-      const auto v = static_cast< godot::Rect2 >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::RECT2I: {
-      const auto v = static_cast< godot::Rect2i >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::VECTOR3: {
-      const auto v = static_cast< godot::Vector3 >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::VECTOR3I: {
-      const auto v = static_cast< godot::Vector3i >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::TRANSFORM2D: {
-      const auto v = static_cast< godot::Transform2D >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::VECTOR4: {
-      const auto v = static_cast< godot::Vector4 >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::VECTOR4I: {
-      const auto v = static_cast< godot::Vector4i >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::PLANE: {
-      const auto v = static_cast< godot::Plane >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::QUATERNION: {
-      const auto v = static_cast< godot::Quaternion >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::AABB: {
-      const auto v = static_cast< godot::AABB >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::BASIS: {
-      const auto v = static_cast< godot::Basis >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::TRANSFORM3D: {
-      const auto v = static_cast< godot::Transform3D >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::PROJECTION: {
-      const auto v = static_cast< godot::Projection >(value);
-      encode_gtype(start, v);
-      break;
-    }
-    case godot::Variant::COLOR: {
-      const auto v = static_cast< godot::Color >(value);
-      encode_gtype(start, v);
-      break;
-    }
+      // Struct Types
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: { \
+      const auto v = static_cast< TYPE >(value); \
+      encode_gtype(start, v); \
+      break; }
+      GODOT_TYPES_STRUCT(GODOT_TD)
+#undef GODOT_TD
+
     case godot::Variant::STRING_NAME: {
       // Convert to String first.
       const godot::String v = static_cast< godot::StringName >(value);
@@ -383,45 +341,18 @@ auto FlatBuffer::encode_variant(const int64_t start, const godot::Variant &value
       encode_gtype(start, v);
       break;
     }
-    case godot::Variant::RID: {
-      ERR_FAIL_MSG("Unsupported type(RID) given as value.");
-    }
-    case godot::Variant::OBJECT:
-      break;
-    case godot::Variant::CALLABLE: {
-      ERR_FAIL_MSG("Unsupported type(RID) given as value.");
-    }
-    case godot::Variant::SIGNAL: {
-      ERR_FAIL_MSG("Unsupported type(RID) given as value.");
-    }
-    case godot::Variant::DICTIONARY:
-      break;
-    case godot::Variant::ARRAY:
-      break;
-    case godot::Variant::PACKED_BYTE_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_STRING_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR2_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR3_ARRAY:
-      break;
-    case godot::Variant::PACKED_COLOR_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR4_ARRAY:
-      break;
-    case godot::Variant::VARIANT_MAX:
-      break;
-    default:
-      break;
+    case godot::Variant::RID:                 { ERR_FAIL_MSG("Unsupported type(RID) given as value."); }
+    case godot::Variant::OBJECT:              { ERR_FAIL_MSG("Unsupported type(OBJECT) given as value."); }
+    case godot::Variant::CALLABLE:            { ERR_FAIL_MSG("Unsupported type(CALLABLE) given as value."); }
+    case godot::Variant::SIGNAL:              { ERR_FAIL_MSG("Unsupported type(SIGNAL) given as value."); }
+    case godot::Variant::DICTIONARY:          { ERR_FAIL_MSG("Unsupported type(DICTIONARY) given as value."); }
+    case godot::Variant::ARRAY:               { ERR_FAIL_MSG("Unsupported type(ARRAY) given as value."); }
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: { ERR_FAIL_MSG("Unsupported type(" #TYPE ") given as value."); }
+      GODOT_TYPES_ARRAY(GODOT_TD)
+#undef GODOT_TD
+    case godot::Variant::VARIANT_MAX: break;
+    default: break;
   }
 }
 
@@ -430,51 +361,19 @@ godot::Variant FlatBuffer::decode_variant(int64_t start, const godot::Variant::T
   ERR_FAIL_COND_V_MSG(expected_type == godot::Variant::Type::VARIANT_MAX, nullptr, "An expected type is required.");
 
   switch( expected_type ) {
-    case godot::Variant::NIL:
-      return nullptr;
-    case godot::Variant::BOOL:
-      return static_cast< bool >(fb_bytes->decode_s8(start));
-    case godot::Variant::INT:
-      return fb_bytes->decode_s64(start);
-    case godot::Variant::FLOAT:
-      return fb_bytes->decode_double(start);
+    case godot::Variant::NIL:         return nullptr;
+    case godot::Variant::BOOL:        return static_cast< bool >(fb_bytes->decode_s8(start));
+    case godot::Variant::INT:         return fb_bytes->decode_s64(start);
+    case godot::Variant::FLOAT:       return fb_bytes->decode_double(start);
     case godot::Variant::STRING: {
       const int string_size = fb_bytes->decode_u32(start);
       start += sizeof(uint32_t);
       return fb_bytes->slice(start, start + string_size).get_string_from_utf8();
     }
-    case godot::Variant::VECTOR2:
-      return decode_gtype2< godot::Vector2 >(fb_bytes, start);
-    case godot::Variant::VECTOR2I:
-      return decode_gtype2< godot::Vector2i >(fb_bytes, start);
-    case godot::Variant::RECT2:
-      return decode_gtype2< godot::Rect2 >(fb_bytes, start);
-    case godot::Variant::RECT2I:
-      return decode_gtype2< godot::Rect2i >(fb_bytes, start);
-    case godot::Variant::VECTOR3:
-      return decode_gtype2< godot::Vector3 >(fb_bytes, start);
-    case godot::Variant::VECTOR3I:
-      return decode_gtype2< godot::Vector3i >(fb_bytes, start);
-    case godot::Variant::TRANSFORM2D:
-      return decode_gtype2< godot::Transform2D >(fb_bytes, start);
-    case godot::Variant::VECTOR4:
-      return decode_gtype2< godot::Vector4 >(fb_bytes, start);
-    case godot::Variant::VECTOR4I:
-      return decode_gtype2< godot::Vector4i >(fb_bytes, start);
-    case godot::Variant::PLANE:
-      return decode_gtype2< godot::Plane >(fb_bytes, start);
-    case godot::Variant::QUATERNION:
-      return decode_gtype2< godot::Quaternion >(fb_bytes, start);
-    case godot::Variant::AABB:
-      return decode_gtype2< godot::AABB >(fb_bytes, start);
-    case godot::Variant::BASIS:
-      return decode_gtype2< godot::Basis >(fb_bytes, start);
-    case godot::Variant::TRANSFORM3D:
-      return decode_gtype2< godot::Transform3D >(fb_bytes, start);
-    case godot::Variant::PROJECTION:
-      return decode_gtype2< godot::Projection >(fb_bytes, start);
-    case godot::Variant::COLOR:
-      return decode_gtype2< godot::Color >(fb_bytes, start);
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: return decode_gtype2<TYPE>(fb_bytes, start);
+      GODOT_TYPES_STRUCT(GODOT_TD)
+#undef GODOT_TD
     case godot::Variant::STRING_NAME: {
       const uint32_t string_size = fb_bytes->decode_u32(start);
       start += sizeof(uint32_t);
@@ -487,41 +386,22 @@ godot::Variant FlatBuffer::decode_variant(int64_t start, const godot::Variant::T
       const godot::String string = fb_bytes->slice(start, start + string_size).get_string_from_utf8();
       return godot::NodePath(string);
     }
-    case godot::Variant::RID: {
-      ERR_FAIL_V_MSG(nullptr, "Unsupported type(RID) given as value.");
-    }
-    case godot::Variant::OBJECT:
-      break;
-    case godot::Variant::CALLABLE: {
-      ERR_FAIL_V_MSG(nullptr, "Unsupported type(RID) given as value.");
-    }
-    case godot::Variant::SIGNAL: {
-      ERR_FAIL_V_MSG(nullptr, "Unsupported type(RID) given as value.");
-    }
-    case godot::Variant::DICTIONARY:
-      break;
-    case godot::Variant::ARRAY:
-      break;
-    case godot::Variant::PACKED_BYTE_ARRAY:
-      return slice_packed_bytes(fb_bytes, start, sizeof(uint8_t));
-    case godot::Variant::PACKED_INT32_ARRAY:
-      return slice_packed_bytes(fb_bytes, start, sizeof(int32_t)).to_int32_array();
-    case godot::Variant::PACKED_INT64_ARRAY:
-      return slice_packed_bytes(fb_bytes, start, sizeof(int64_t)).to_int64_array();
-    case godot::Variant::PACKED_FLOAT32_ARRAY:
-      return slice_packed_bytes(fb_bytes, start, sizeof(float)).to_float32_array();
-    case godot::Variant::PACKED_FLOAT64_ARRAY:
-      return slice_packed_bytes(fb_bytes, start, sizeof(double)).to_float64_array();
-    case godot::Variant::PACKED_STRING_ARRAY:
-      return decode_packed_string< godot::PackedStringArray, godot::String >(fb_bytes, start);
-    case godot::Variant::PACKED_VECTOR2_ARRAY:
-      return decode_packed_struct< godot::PackedVector2Array, godot::Vector2 >(fb_bytes, start);
-    case godot::Variant::PACKED_VECTOR3_ARRAY:
-      return decode_packed_struct< godot::PackedVector3Array, godot::Vector3 >(fb_bytes, start);
-    case godot::Variant::PACKED_COLOR_ARRAY:
-      return decode_packed_struct< godot::PackedColorArray, godot::Color >(fb_bytes, start);
-    case godot::Variant::PACKED_VECTOR4_ARRAY:
-      return decode_packed_struct< godot::PackedVector4Array, godot::Vector4 >(fb_bytes, start);
+    case godot::Variant::RID:        { ERR_FAIL_V_MSG(nullptr, "Unsupported type(RID) given as value."); }
+    case godot::Variant::OBJECT:     { ERR_FAIL_V_MSG(nullptr, "Unsupported type(OBJECT) given as value."); }
+    case godot::Variant::CALLABLE:   { ERR_FAIL_V_MSG(nullptr, "Unsupported type(CALLABLE) given as value."); }
+    case godot::Variant::SIGNAL:     { ERR_FAIL_V_MSG(nullptr, "Unsupported type(SIGNAL) given as value."); }
+    case godot::Variant::DICTIONARY: { ERR_FAIL_V_MSG(nullptr, "Unsupported type(DICTIONARY) given as value."); }
+    case godot::Variant::ARRAY:      { ERR_FAIL_V_MSG(nullptr, "Unsupported type(ARRAY) given as value."); }
+    case godot::Variant::PACKED_BYTE_ARRAY:    return slice_packed_bytes(fb_bytes, start, sizeof(uint8_t));
+    case godot::Variant::PACKED_INT32_ARRAY:   return slice_packed_bytes(fb_bytes, start, sizeof(int32_t)).to_int32_array();
+    case godot::Variant::PACKED_INT64_ARRAY:   return slice_packed_bytes(fb_bytes, start, sizeof(int64_t)).to_int64_array();
+    case godot::Variant::PACKED_FLOAT32_ARRAY: return slice_packed_bytes(fb_bytes, start, sizeof(float  )).to_float32_array();
+    case godot::Variant::PACKED_FLOAT64_ARRAY: return slice_packed_bytes(fb_bytes, start, sizeof(double )).to_float64_array();
+    case godot::Variant::PACKED_STRING_ARRAY:  return decode_packed_string< godot::PackedStringArray,  godot::String >(fb_bytes, start);
+    case godot::Variant::PACKED_VECTOR2_ARRAY: return decode_packed_struct< godot::PackedVector2Array, godot::Vector2 >(fb_bytes, start);
+    case godot::Variant::PACKED_VECTOR3_ARRAY: return decode_packed_struct< godot::PackedVector3Array, godot::Vector3 >(fb_bytes, start);
+    case godot::Variant::PACKED_COLOR_ARRAY:   return decode_packed_struct< godot::PackedColorArray,   godot::Color >(fb_bytes, start);
+    case godot::Variant::PACKED_VECTOR4_ARRAY: return decode_packed_struct< godot::PackedVector4Array, godot::Vector4 >(fb_bytes, start);
     default:;
   }
   return nullptr;
@@ -540,88 +420,51 @@ bool FlatBuffer::verify_variant(
   // double precision alignment would be 8, i might have to double check things.
   const auto v = verifier->getVerifier();
   switch( type ) {
-    case godot::Variant::NIL:
-      break;
-    case godot::Variant::BOOL:
-      return table->VerifyField< uint8_t >(*v, field, 1);
-    case godot::Variant::INT:
-      return table->VerifyField< int64_t >(*v, field, 8);
-    case godot::Variant::FLOAT:
-      return table->VerifyField< double >(*v, field, 8);
-    case godot::Variant::STRING:
-      return verify_string(verifier, field);
-    case godot::Variant::VECTOR2:
-      return table->VerifyField< godot::Vector2 >(*v, field, 4);
-    case godot::Variant::VECTOR2I:
-      return table->VerifyField< godot::Vector2i >(*v, field, 4);
-    case godot::Variant::RECT2:
-      return table->VerifyField< godot::Rect2 >(*v, field, 4);
-    case godot::Variant::RECT2I:
-      return table->VerifyField< godot::Rect2i >(*v, field, 4);
-    case godot::Variant::VECTOR3:
-      return table->VerifyField< godot::Vector3 >(*v, field, 4);
-    case godot::Variant::VECTOR3I:
-      return table->VerifyField< godot::Vector3i >(*v, field, 4);
-    case godot::Variant::TRANSFORM2D:
-      return table->VerifyField< godot::Transform2D >(*v, field, 4);
-    case godot::Variant::VECTOR4:
-      return table->VerifyField< godot::Vector4 >(*v, field, 4);
-    case godot::Variant::VECTOR4I:
-      return table->VerifyField< godot::Vector4i >(*v, field, 4);
-    case godot::Variant::PLANE:
-      return table->VerifyField< godot::Plane >(*v, field, 4);
-    case godot::Variant::QUATERNION:
-      return table->VerifyField< godot::Quaternion >(*v, field, 4);
-    case godot::Variant::AABB:
-      return table->VerifyField< godot::AABB >(*v, field, 4);
-    case godot::Variant::BASIS:
-      return table->VerifyField< godot::Basis >(*v, field, 4);
-    case godot::Variant::TRANSFORM3D:
-      return table->VerifyField< godot::Transform3D >(*v, field, 4);
-    case godot::Variant::PROJECTION:
-      return table->VerifyField< godot::Projection >(*v, field, 4);
-    case godot::Variant::COLOR:
-      return table->VerifyField< godot::Color >(*v, field, 4);
-    case godot::Variant::STRING_NAME:
-      return verify_string(verifier, field);
-    case godot::Variant::NODE_PATH:
-      return verify_string(verifier, field);
-    case godot::Variant::RID:
-      break;
-    case godot::Variant::OBJECT:
-      break;
-    case godot::Variant::CALLABLE:
-      break;
-    case godot::Variant::SIGNAL:
-      break;
-    case godot::Variant::DICTIONARY:
-      break;
-    case godot::Variant::ARRAY:
-      break;
-    case godot::Variant::PACKED_BYTE_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_STRING_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR2_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR3_ARRAY:
-      break;
-    case godot::Variant::PACKED_COLOR_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR4_ARRAY:
-      break;
+      // Scalar types
+    case godot::Variant::NIL:{ ERR_FAIL_V_MSG(false, "Unsupported type(NIL) given as value."); }
+    case godot::Variant::BOOL:        return table->VerifyField< uint8_t >(*v, field, 1);
+    case godot::Variant::INT:         return table->VerifyField< int64_t >(*v, field, 8);
+    case godot::Variant::FLOAT:       return table->VerifyField< double >(*v, field, 8);
+
+      //Struct Types
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: return table->VerifyField<TYPE>(*v, field, 4);
+      GODOT_TYPES_STRUCT(GODOT_TD)
+#undef GODOT_TD
+
+      // String Types
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: return verify_string(verifier, field);
+      GODOT_TYPES_STRING(GODOT_TD)
+#undef GODOT_TD
+
+    case godot::Variant::RID:         { ERR_FAIL_V_MSG(false, "Unsupported type(RID) given as value."); }
+    case godot::Variant::OBJECT:      { ERR_FAIL_V_MSG(false, "Unsupported type(OBJECT) given as value."); }
+    case godot::Variant::CALLABLE:    { ERR_FAIL_V_MSG(false, "Unsupported type(CALLABLE) given as value."); }
+    case godot::Variant::SIGNAL:      { ERR_FAIL_V_MSG(false, "Unsupported type(SIGNAL) given as value."); }
+    case godot::Variant::DICTIONARY:  { ERR_FAIL_V_MSG(false, "Unsupported type(DICTIONARY) given as value."); }
+    case godot::Variant::ARRAY:       { ERR_FAIL_V_MSG(false, "Unsupported type(ARRAY) given as value."); }
+
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: { ERR_FAIL_V_MSG(false, "Unsupported type(" #TYPE ") given as value."); }
+      GODOT_TYPES_ARRAY(GODOT_TD)
+#undef GODOT_TD
     case godot::Variant::VARIANT_MAX:
       break;
   }
   return false;
+}
+
+
+bool FlatBuffer::verify_vector2(
+        const FlatBufferVerifier *verifier, const voffset_t field_offset, const size_t size,
+        const bool required) const {
+  const auto v = verifier->getVerifier();
+  const auto p = table->GetPointer< const uint8_t * >(field_offset);
+  if( required && ! p ) {
+    return false;
+  }
+  return ! p || v->VerifyVectorOrString(p, size);
 }
 
 
@@ -631,84 +474,30 @@ bool FlatBuffer::verify_vector_of_variant(
   // double precision alignment would be 8, i might have to double check things.
   const auto v = verifier->getVerifier();
   switch( type ) {
-    case godot::Variant::NIL:
-      break;
-    case godot::Variant::BOOL:
-      break;
-    case godot::Variant::INT:
-      break;
-    case godot::Variant::FLOAT:
-      break;
-    case godot::Variant::STRING:
-      break;
-    case godot::Variant::VECTOR2:
-      return table->VerifyVectorWithDefault< godot::Vector2 >(*v, field);
-    case godot::Variant::VECTOR2I:
-      return table->VerifyVectorWithDefault< godot::Vector2i >(*v, field);
-    case godot::Variant::RECT2:
-      return table->VerifyVectorWithDefault< godot::Rect2 >(*v, field);
-    case godot::Variant::RECT2I:
-      return table->VerifyVectorWithDefault< godot::Rect2i >(*v, field);
-    case godot::Variant::VECTOR3:
-      return table->VerifyVectorWithDefault< godot::Vector3 >(*v, field);
-    case godot::Variant::VECTOR3I:
-      return table->VerifyVectorWithDefault< godot::Vector3i >(*v, field);
-    case godot::Variant::TRANSFORM2D:
-      return table->VerifyVectorWithDefault< godot::Transform2D >(*v, field);
-    case godot::Variant::VECTOR4:
-      return table->VerifyVectorWithDefault< godot::Vector4 >(*v, field);
-    case godot::Variant::VECTOR4I:
-      return table->VerifyVectorWithDefault< godot::Vector4i >(*v, field);
-    case godot::Variant::PLANE:
-      return table->VerifyVectorWithDefault< godot::Plane >(*v, field);
-    case godot::Variant::QUATERNION:
-      return table->VerifyVectorWithDefault< godot::Quaternion >(*v, field);
-    case godot::Variant::AABB:
-      return table->VerifyVectorWithDefault< godot::AABB >(*v, field);
-    case godot::Variant::BASIS:
-      return table->VerifyVectorWithDefault< godot::Basis >(*v, field);
-    case godot::Variant::TRANSFORM3D:
-      return table->VerifyVectorWithDefault< godot::Transform3D >(*v, field);
-    case godot::Variant::PROJECTION:
-      return table->VerifyVectorWithDefault< godot::Projection >(*v, field);
-    case godot::Variant::COLOR:
-      return table->VerifyVectorWithDefault< godot::Color >(*v, field);
-    case godot::Variant::STRING_NAME:
-      break;
-    case godot::Variant::NODE_PATH:
-      break;
-    case godot::Variant::RID:
-      break;
-    case godot::Variant::OBJECT:
-      break;
-    case godot::Variant::CALLABLE:
-      break;
-    case godot::Variant::SIGNAL:
-      break;
-    case godot::Variant::DICTIONARY:
-      break;
-    case godot::Variant::ARRAY:
-      break;
-    case godot::Variant::PACKED_BYTE_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_INT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT32_ARRAY:
-      break;
-    case godot::Variant::PACKED_FLOAT64_ARRAY:
-      break;
-    case godot::Variant::PACKED_STRING_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR2_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR3_ARRAY:
-      break;
-    case godot::Variant::PACKED_COLOR_ARRAY:
-      break;
-    case godot::Variant::PACKED_VECTOR4_ARRAY:
-      break;
+    case godot::Variant::NIL:{ ERR_FAIL_V_MSG(false, "Unsupported type(NIL) given as value."); }
+    case godot::Variant::BOOL:{ ERR_FAIL_V_MSG(false, "Unsupported type(BOOL) given as value."); }
+    case godot::Variant::INT:{ ERR_FAIL_V_MSG(false, "Unsupported type(INT) given as value."); }
+    case godot::Variant::FLOAT:{ ERR_FAIL_V_MSG(false, "Unsupported type(FLOAT) given as value."); }
+    case godot::Variant::STRING: {
+      const auto strings = table->GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(field);
+      return v->VerifyVectorOfStrings(strings);
+    }
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: return table->VerifyVectorWithDefault<TYPE>(*v, field);
+      GODOT_TYPES_STRUCT(GODOT_TD)
+#undef GODOT_TD
+    case godot::Variant::STRING_NAME: { ERR_FAIL_V_MSG(false, "Unsupported type(STRING_NAME) given as value."); }
+    case godot::Variant::NODE_PATH:   { ERR_FAIL_V_MSG(false, "Unsupported type(NODE_PATH) given as value."); }
+    case godot::Variant::RID:         { ERR_FAIL_V_MSG(false, "Unsupported type(RID) given as value."); }
+    case godot::Variant::OBJECT:      { ERR_FAIL_V_MSG(false, "Unsupported type(OBJECT) given as value."); }
+    case godot::Variant::CALLABLE:    { ERR_FAIL_V_MSG(false, "Unsupported type(CALLABLE) given as value."); }
+    case godot::Variant::SIGNAL:      { ERR_FAIL_V_MSG(false, "Unsupported type(SIGNAL) given as value."); }
+    case godot::Variant::DICTIONARY:  { ERR_FAIL_V_MSG(false, "Unsupported type(DICTIONARY) given as value."); }
+    case godot::Variant::ARRAY:       { ERR_FAIL_V_MSG(false, "Unsupported type(ARRAY) given as value."); }
+#define GODOT_TD(INT, ENUM, TYPE) \
+case ENUM: { ERR_FAIL_V_MSG(false, "Unsupported type(" #TYPE ") given as value."); }
+      GODOT_TYPES_ARRAY(GODOT_TD)
+#undef GODOT_TD
     case godot::Variant::VARIANT_MAX:
       break;
   }

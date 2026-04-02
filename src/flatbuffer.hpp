@@ -165,10 +165,12 @@ public:
     const auto v = verifier->getVerifier();
     return table->VerifyVectorWithDefault<P>(*v, field );
   }
+  // I actually think it might be simpler to write my own verify vector with a custom size as i cant use template
+  // parameters to determine the width of the vector items.
+
+  bool verify_vector2(const FlatBufferVerifier *verifier, const voffset_t field_offset, const size_t size, const bool required) const;
 
   bool verify_vector_of_variant(const FlatBufferVerifier *verifier, voffset_t field, godot::Variant::Type type) const;
-
-
 
   // MARK: Get
   //  │  ___     _      [br]
