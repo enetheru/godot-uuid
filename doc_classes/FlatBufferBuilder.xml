@@ -240,7 +240,7 @@
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="type" type="int" enum="Variant.Type" default="39" />
 			<description>
-				Encodes a Godot [Variant] (like String or PackedArray) as a FlatBuffer offset and returns it.
+				Encodes a Godot [Variant] (like a Vector3, String or PackedArray) and returns an offset position.
 			</description>
 		</method>
 		<method name="create_vector_float32">

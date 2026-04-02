@@ -20,6 +20,7 @@ void FlatBufferBuilder::_bind_methods() {
   ClassDB::bind_method(D_METHOD("finish", "table_offset"), &FlatBufferBuilder::Finish);
   ClassDB::bind_method(D_METHOD("start_table"), &FlatBufferBuilder::StartTable);
   ClassDB::bind_method(D_METHOD("end_table", "start"), &FlatBufferBuilder::EndTable);
+  ClassDB::bind_method(D_METHOD("required", "table", "field"), &FlatBufferBuilder::Required);
   ClassDB::bind_method(D_METHOD("get_size"), &FlatBufferBuilder::GetSize);
   ClassDB::bind_method(D_METHOD("get_buffer"), &FlatBufferBuilder::GetPackedByteArray);
 
@@ -141,6 +142,13 @@ void FlatBufferBuilder::_bind_methods() {
 FlatBufferBuilder::FlatBufferBuilder() { builder = std::make_unique< flatbuffers::FlatBufferBuilder >(); }
 
 FlatBufferBuilder::FlatBufferBuilder(int size) { builder = std::make_unique< flatbuffers::FlatBufferBuilder >(size); }
+
+void FlatBufferBuilder::Required(
+        const uoffset_t table_offset, const flatbuffers::voffset_t field_offset) const {
+  const flatbuffers::Offset<> ofs = table_offset;
+  return builder->Required( ofs, field_offset);
+}
+
 
 void FlatBufferBuilder::Finish(const uint32_t root) const {
   const Offset offset = root;

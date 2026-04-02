@@ -34,6 +34,8 @@ public:
   [[nodiscard]] uoffset_t StartTable() const { return builder->StartTable(); }
   [[nodiscard]] uoffset_t EndTable( const uoffset_t start ) const { return builder->EndTable( start ); }
 
+  void Required(uoffset_t table, flatbuffers::voffset_t field_offset) const;
+
   void Finish( uint32_t root ) const;
 
   [[nodiscard]] godot::PackedByteArray GetPackedByteArray() const;
