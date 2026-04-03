@@ -1,5 +1,6 @@
 {
 	"nodes":[
+		{"id":"fd7e72fc9f91f2dc","type":"group","x":-2120,"y":1640,"width":600,"height":320,"color":"1","label":"Important List"},
 		{"id":"185f56311febd149","type":"text","text":"### General\n- [x] Add Document Comments for generated code\n- [x] make requiring a root_type optional\n-  investigate the use of using the `object._iter*` functions\n    - [ ] create custom iterators for vectors of object so the object can be re-used over the iterator sequence?\n- [ ] Include file location is a bit broken, it appends the current schema location to the front always. rather than include as is. I think it needs an overhaul\n- [ ] ?custom attribute for `{gd} class_name`?\n- [x] struct docstring could use some elaboration","x":-1200,"y":2320,"width":1160,"height":280},
 		{"id":"f4628c33a19060c9","type":"text","text":"#### FlatBufferBuilder\n- [ ] add_* function arguments need to be named with \\_offset if they expect an offset instead of a value.\n- [x] boolean value is misrepresented as an int in the create_* functions\n- [x] generated bool accessor is also int\n- [ ] creating a struct as raw bytes right now is separate to the builder buffer. I need to consolidate that.\n- [ ] CreateVariant - handle generic array types\n- [ ] CreateVariant - handle dictionary types","x":-1200,"y":2620,"width":1160,"height":220},
 		{"id":"be48baaf458316ad","type":"text","text":"### Shared Extension and code Generator\n- [ ] Fixed Sized arrays are still broken.\n- [ ] Because the object acts like a view, it can be broken easily if the bytes are modified.\n    - [x] Add an `is_valid()` function.\n- [x] reserving 'start' is super annoying, make it something more unique so others can use the word.\n- [x] reduce surface area of API by using Enum's to indicate which type to serialise as.\n- [ ] I want a create from dict which picks up the fields from the dictionary to populate the flatbuffer\n    - This might actually be faster due to less back and forth from godot.\n- [ ] I don't like that test structs are not created simply, new can allocate the buffer, but I want to pass it values in the creation function. so some static overloads may be desirable.","x":-1200,"y":1900,"width":1160,"height":300},
@@ -14,7 +15,7 @@
 		{"id":"a9086b20bfaf29ad","type":"text","text":"## Godot.Flatbuffers Addon","x":-1980,"y":120,"width":434,"height":60},
 		{"id":"c420fc8f3434bee3","type":"text","text":"## Flatbuffers Compiler","x":-2000,"y":2520,"width":393,"height":60},
 		{"id":"0654f9241e433dd6","type":"text","text":"## Godot.Flatbuffers Extension","x":-2040,"y":1480,"width":500,"height":60},
-		{"id":"98bff579e01ec478","type":"text","text":"#### Object > FlatBuffer\n- [ ] When accessing nested objects, a new object is created look into sharing memory.\n- [ ] Would be nice to have a reset( data, start ) function","x":-1200,"y":1560,"width":1160,"height":120},
+		{"id":"98bff579e01ec478","type":"text","text":"#### Object > FlatBuffer\n- [ ] When accessing nested objects, a new object is created look into sharing memory.\n- [ ] Would be nice to have a reset( data, start ) function\n- [ ] Some form of pretty-print of the buffer structure","x":-1200,"y":1560,"width":1160,"height":140},
 		{"id":"ab1ddd21c38a425f","type":"text","text":"#### Testing\n- [ ] Perform testing in CI/CD\n- [ ] Test FlexBuffer Code\n- [ ] Flesh out testing by category\n    - [ ] Schema Parsing\n    - [x] Code Generation\n    - [x] Encoding\n    - [x] Verification\n    - [x] Decoding\n    - [x] Using\n- [x] Copy all of the testing cases from the flatbuffers project into a separate folder\n- [ ] Investigate this further: [Cannot resolve `{gd} class_name` in dynamic GDScript](https://github.com/godotengine/godot/issues/98985)","x":-1200,"y":-1520,"width":1160,"height":340},
 		{"id":"c5bcb0c17107b603","type":"text","text":"#### Benchmarking\n- [x] Copy strategy from flatbuffers project\n- [x] Compare against built-in solution.\n-  Scenarios\n    - [x] Update from buffer\n    - [ ] Create from buffer\n    - [x] encode and store as buffer\n    - [x] load from decode from buffer\n- [ ] Methods\n    - [x] Godot Built-In with GDScript\n    - [ ] Godot Built-In with GDExtension\n    - [x] Flatbuffers with GDScript\n    - [ ] Flatbuffers with GDExtension\n- [ ] Investigate other languages\n    - [ ] Rust\n    - [ ] C#\n- [ ] Investigate Alternative Methods","x":-1200,"y":-1160,"width":1160,"height":480},
 		{"id":"4f690680af7b8e91","type":"text","text":"#### Documentation\n- [ ] Explain Object API","x":-1200,"y":-660,"width":1160,"height":100},
@@ -22,7 +23,27 @@
 		{"id":"c485e526da3a734b","type":"text","text":"## Development Project","x":-1940,"y":-960,"width":434,"height":60},
 		{"id":"f3e851224d39fa71","type":"text","text":"#### ToolTips\n- [ ] Figure out how to highlight/tooltip an error or hint.","x":300,"y":280,"width":565,"height":180},
 		{"id":"02a6097777384eb4","type":"text","text":"#### FlatBufferVerifier\n- [x] implement union verification function\n- [x] implement vector of strings","x":-1200,"y":2860,"width":1160,"height":120},
-		{"id":"b8d3ed21fa07214a","type":"text","text":"#### FlatBuffer\n- [x] it used to be the case that the decode of the starting point would happen automatically\n        ~~but something was broken about it and i removed it, now its a real inconvenient to always have to~~\n        ~~pass a decoded start value all the time. I think if the start value is something like 0, then we can decode that location automatically for the real start.~~\n- [ ] custom structs need their memory assigned if they are constructed without arguments.\n- [x] Keep VT_* values for deprecated fields.\n- [x] try a `{gd} enum vtable` with no name, or change its name to `{gd} enum _fb_vtable`\n- [x] remove duplicate size function for vectors of unions","x":-1200,"y":3000,"width":1160,"height":320}
+		{"id":"b8d3ed21fa07214a","type":"text","text":"#### FlatBuffer\n- [x] it used to be the case that the decode of the starting point would happen automatically\n        ~~but something was broken about it and i removed it, now its a real inconvenient to always have to~~\n        ~~pass a decoded start value all the time. I think if the start value is something like 0, then we can decode that location automatically for the real start.~~\n- [ ] custom structs need their memory assigned if they are constructed without arguments.\n- [x] Keep VT_* values for deprecated fields.\n- [x] try a `{gd} enum vtable` with no name, or change its name to `{gd} enum _fb_vtable`\n- [x] remove duplicate size function for vectors of unions\n- [ ] If a packed byte array field represents another buffer, it would be nice to get the start offset of the bytes themselves so that we do not have to slice/copy the bytes to interpret it. There might be an attribute I can associate with the data to trigger the generation of a `get/fill_as_root(start, type/object)` function\n- [ ] pretty-printer","x":-1200,"y":3020,"width":1160,"height":380},
+		{
+			"id":"63d341aba4314eb0",
+			"type":"text",
+			"text":"\n> [!important] Required\n> Turns out the required attribute is super important\n",
+			"styleAttributes":{},
+			"x":-2100,
+			"y":1660,
+			"width":560,
+			"height":120
+		},
+		{
+			"id":"edcbdda3785de838",
+			"type":"text",
+			"text":"\n> [!important] add `_offset` to args\n>  it becomes increasingly important to make the expectations visible\n",
+			"styleAttributes":{},
+			"x":-2100,
+			"y":1800,
+			"width":560,
+			"height":140
+		}
 	],
 	"edges":[
 		{"id":"c77084e750c5099e","fromNode":"c420fc8f3434bee3","fromSide":"right","toNode":"02a6097777384eb4","toSide":"left","toEnd":"none"},
@@ -36,7 +57,7 @@
 		{"id":"4791daf62843c5cd","fromNode":"c485e526da3a734b","fromSide":"right","toNode":"ac486d9519a6928b","toSide":"left"},
 		{"id":"c258d82ef6ca8bce","toFloating":false,"fromNode":"c420fc8f3434bee3","fromSide":"right","toNode":"f4628c33a19060c9","toSide":"left"},
 		{"id":"74e5542ced0e9e55","fromFloating":false,"fromNode":"c420fc8f3434bee3","fromSide":"right","toNode":"b8d3ed21fa07214a","toSide":"left"},
-		{"id":"980d5b29a0c2b2d9","fromNode":"0654f9241e433dd6","fromSide":"right","toNode":"53e5b10bfb42cd3f","toSide":"left"},
+		{"id":"980d5b29a0c2b2d9","fromFloating":false,"fromNode":"0654f9241e433dd6","fromSide":"right","toNode":"53e5b10bfb42cd3f","toSide":"left"},
 		{"id":"3e670b50acf03697","fromNode":"c420fc8f3434bee3","fromSide":"right","toNode":"be48baaf458316ad","toSide":"left"},
 		{"id":"5fecd468e07b0d8f","fromNode":"0654f9241e433dd6","fromSide":"right","toNode":"be48baaf458316ad","toSide":"left"},
 		{"id":"b28980742d76126f","fromFloating":false,"toFloating":false,"fromNode":"140f6eab3b2748c6","fromSide":"right","toNode":"f3e851224d39fa71","toSide":"left"},
