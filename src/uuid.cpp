@@ -24,8 +24,6 @@ constexpr uuids::uuid max_stduuid = uuids::uuid::from_string(MAX_UUID).value();
 bool UUID::initialised = false;
 
 // RNG Sources
-std::mt19937 UUID::mt_rng{};
-
 Ref< RandomNumberGenerator > UUID::godot_rng{};
 
 // UUID generators
@@ -35,9 +33,53 @@ uuids::uuid_name_generator stduuid_dung{ nil_stduuid }; // Default Unique Name G
 std::unique_ptr< uuids::basic_uuid_random_generator< RandomNumberGenerator > >
         UUID::stduuid_burg{}; // Basic UUID Random Generator (BURG)
 
-UUIDv4::UUIDGenerator< std::mt19937_64 > UUID::uuidv4_generator{};
 
-uuids::uuid_random_generator UUID::stduuid_urg{ mt_rng }; // UUID Random Generator (URG)
+// =====================================================================
+// Generate a random stduuid uuid
+// =====================================================================
+inline uuids::uuid generate_random_stduuid()
+{
+  // Seeded ONCE per process with real entropy (same high-quality seed as before)
+  static std::mt19937 rng = []() {
+    std::random_device rd;
+    std::seed_seq seed{rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()};
+    return std::mt19937{seed};
+  }();
+
+  // UUID generator re-uses the exact same RNG (no copy of the 2.5 KB state)
+  static uuids::uuid_random_generator stduuid_gen{rng};
+
+  // Return a fresh UUIDv4
+  return stduuid_gen();
+}
+
+// =====================================================================
+// Generate a random uuidv4 uuid
+// =====================================================================
+inline UUIDv4::UUID generate_random_uuidv4()
+{
+  // High-quality 64-bit seed generated ONCE per process
+  static UUIDv4::UUIDGenerator<std::mt19937_64> uuidv4_generator = []() {
+    std::random_device rd;
+
+    // Mix plenty of entropy into a seed_seq
+    std::seed_seq seed{
+      rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd(),
+      rd(), rd(), rd(), rd(), rd(), rd(), rd(), rd()
+  };
+
+    // Turn the mixed entropy into a single 64-bit seed for the constructor
+    std::array<uint32_t, 2> buf{};
+    seed.generate(buf.begin(), buf.end());
+    const uint64_t high_entropy_seed = (static_cast<uint64_t>(buf[0]) << 32) | buf[1];
+
+    return UUIDv4::UUIDGenerator<std::mt19937_64>{high_entropy_seed};
+  }();
+
+  // Return the native UUID object
+  return uuidv4_generator.getUUID();
+}
+
 
 // MARK: Endianness
 
@@ -377,32 +419,32 @@ Vector4i UUID::create_v3_godot_vector4i(const String &seed, const Variant &names
 // MARK: Generation v4
 
 String UUID::create_v4_stduuid_string() {
-  return ::to_string(stduuid_urg());
+  return ::to_string(generate_random_stduuid());
 }
 
 
 PackedByteArray UUID::create_v4_stduuid_bytes() {
-  return ::to_bytes(stduuid_urg());
+  return ::to_bytes(generate_random_stduuid());
 }
 
 
 Vector4i        UUID::create_v4_stduuid_vector4i() {
-  return ::to_vector4i(stduuid_urg());
+  return ::to_vector4i(generate_random_stduuid());
 }
 
 
 String UUID::create_v4_uuidv4_string() {
-  return ::to_string(uuidv4_generator.getUUID());
+  return ::to_string(generate_random_uuidv4());
 }
 
 
 PackedByteArray UUID::create_v4_uuidv4_bytes() {
-  return ::to_bytes(uuidv4_generator.getUUID());
+  return ::to_bytes(generate_random_uuidv4());
 }
 
 
 Vector4i        UUID::create_v4_uuidv4_vector4i() {
-  return ::to_vector4i(uuidv4_generator.getUUID());
+  return ::to_vector4i(generate_random_uuidv4());
 }
 
 // MARK: Generation v5

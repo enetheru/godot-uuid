@@ -46,15 +46,11 @@ class UUID final : public RefCounted {
 
   static bool initialised;
   // RNG Sources
-  static std::mt19937                        mt_rng;
   static godot::Ref< RandomNumberGenerator > godot_rng;
   // UUID generators
   static uuids::uuid_name_generator stduuid_dung; // Default Unique Name Generator (DUNG)
   static std::unique_ptr< uuids::basic_uuid_random_generator< RandomNumberGenerator > >
                                                   stduuid_burg; // Basic UUID Random Generator (BURG)
-  static UUIDv4::UUIDGenerator< std::mt19937_64 > uuidv4_generator;
-  static uuids::uuid_random_generator             stduuid_urg; // UUID Random Generator (URG)
-
   std::unordered_map< uuids::uuid, Variant > _variant_map;
 
 protected:
