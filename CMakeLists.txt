@@ -36,7 +36,7 @@ set( AUTHOR_TAG "Enetheru")
 string( TOLOWER "${AUTHOR_TAG}" AUTHOR_TAG_LOWER )
 
 ## Target options
-set( GDE_NAME "flatbuffers" )
+set( GDE_NAME "uuid" )
 
 set( GODOT_PROJECT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/project" )
 set( GDE_INSTALL_NAME "${AUTHOR_TAG_LOWER}.${GDE_NAME}-extension" )
@@ -61,48 +61,6 @@ find_program(GIT_EXECUTABLE NAMES "git" DOC "" NO_CACHE REQUIRED)
 if( NOT EXISTS "${GIT_EXECUTABLE}" )
     message( FATAL_ERROR "Unable to find Git at: '${GIT_EXECUTABLE}'")
 endif()
-
-# MARK: flatbuffs
-# ╒════════════════════════════════════════════════════════════════════════════╕
-# │ ███████ ██       █████  ████████ ██████  ██    ██ ███████ ███████ ███████  │
-# │ ██      ██      ██   ██    ██    ██   ██ ██    ██ ██      ██      ██       │
-# │ █████   ██      ███████    ██    ██████  ██    ██ █████   █████   ███████  │
-# │ ██      ██      ██   ██    ██    ██   ██ ██    ██ ██      ██           ██  │
-# │ ██      ███████ ██   ██    ██    ██████   ██████  ██      ██      ███████  │
-# ╘════════════════════════════════════════════════════════════════════════════╛
-
-set( FLATBUFFERS_GIT_URL "https://github.com/enetheru/flatbuffers.git"
-        CACHE STRING "Location of the godot-cpp git repository" )
-set( FLATBUFFERS_GIT_TAG "gdscript"
-        CACHE STRING "git hash, branch or tag to fetch" )
-
-# Configuration Options
-set( FLATBUFFERS_BUILD_FLATHASH     NO )
-set( FLATBUFFERS_BUILD_SHAREDLIB    NO )
-set( FLATBUFFERS_BUILD_TESTS        NO )
-set( FLATBUFFERS_INSTALL            NO )
-set( FLATBUFFERS_STATIC_FLATC      YES )
-set( FLATBUFFERS_BUILD_FLATC       YES )
-set( FLATBUFFERS_CPP_STD            17 )
-set( FLATBUFFERS_BUILD_CPP17       YES )
-
-
-FetchContent_Declare( FlatBuffers
-        GIT_REPOSITORY  "${FLATBUFFERS_GIT_URL}"
-        GIT_TAG         "${FLATBUFFERS_GIT_TAG}"
-        SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/lib/flatbuffers"
-        SYSTEM
-        EXCLUDE_FROM_ALL
-)
-FetchContent_MakeAvailable( FlatBuffers )
-
-set_target_properties(
-        flatc
-        PROPERTIES
-        EXCLUDE_FROM_ALL OFF
-        OUTPUT_NAME "flatc$<$<CONFIG:Debug,RelWithDebInfo>:.$<LOWER_CASE:$<CONFIG>>>"
-        RUNTIME_OUTPUT_DIRECTORY "$<1:${GDE_INSTALL_PATH}/bin>"
-)
 
 # If we dont want to build the extension then we can stop here
 # This does break any other targets for this configuration
@@ -155,7 +113,7 @@ get_target_property( GODOTCPP_ARCH godot-cpp GODOTCPP_ARCH )
 # │ ██      ██   ██  ██████   █████  ███████  ██████    ██                     │
 # ╘════════════════════════════════════════════════════════════════════════════╛
 
-project( godot-flatbuffers-extension
+project( godot-uuid-extension
         VERSION 1.0
         DESCRIPTION ""
         LANGUAGES CXX)
@@ -167,9 +125,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory( src )
 
-add_library( "godot-flatbuffers" SHARED )
+add_library( "godot-uuid" SHARED )
 
-target_sources( "godot-flatbuffers"
+target_sources( "godot-uuid"
     PRIVATE
         ${SOURCES}
         ${DOC_SOURCE_PATH}
@@ -178,14 +136,14 @@ target_sources( "godot-flatbuffers"
 # conditionally add doc data to compile output
 if(GODOTCPP_TARGET MATCHES "editor|template_debug")
     file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/doc_classes/*.xml")
-    target_doc_sources( "godot-flatbuffers" "${DOC_XML}" )
+    target_doc_sources( "godot-uuid" "${DOC_XML}" )
 endif()
 
-target_link_libraries( "godot-flatbuffers" PRIVATE godot-cpp FlatBuffers::FlatBuffers stduuid uuid_v4::uuid_v4)
+target_link_libraries( "godot-uuid" PRIVATE godot-cpp stduuid uuid_v4::uuid_v4)
 
-set_target_properties( "godot-flatbuffers"
+set_target_properties( "godot-uuid"
         PROPERTIES
-        FOLDER "godot-flatbuffers"
+        FOLDER "godot-uuid"
         #The generator expression here prevents a subdir from being created.
         RUNTIME_OUTPUT_DIRECTORY "$<1:${GDE_INSTALL_PATH}/bin>"
         OUTPUT_NAME "${GDE_NAME}.${GODOTCPP_SUFFIX}$<$<CONFIG:Debug,RelWithDebInfo>:.$<LOWER_CASE:$<CONFIG>>>"

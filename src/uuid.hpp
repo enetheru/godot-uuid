@@ -11,7 +11,7 @@
 #include <uuid.h>
 #include <uuid_v4.h>
 
-namespace godot_flatbuffers {
+namespace godot_uuid {
 
 using godot::Array;
 
@@ -157,6 +157,6 @@ public:
   void  clear();
 };
 ;
-} // namespace godot_flatbuffers
+} // namespace godot_uuid
 
 #endif

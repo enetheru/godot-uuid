@@ -6,7 +6,7 @@
 #include "godot_cpp/variant/variant_internal.hpp"
 #include "utils.hpp"
 
-using namespace godot_flatbuffers;
+using namespace godot_uuid;
 
 using godot::ClassDB;
 using godot::HashingContext;
