@@ -614,7 +614,9 @@ Array UUID::get_keys_as_vector4i() const {
 Array UUID::get_values() const {
   Array values;
   for( const auto &key : _variant_map | std::views::values ) {
-    values.append(to_vector4i(key));
+    auto opt = to_stduuid(key);
+    const auto &uuid = opt.value();
+    values.append(_variant_map.at(uuid));  // throws if missing
   }
   return values;
 }
