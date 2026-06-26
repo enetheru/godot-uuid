@@ -16,8 +16,18 @@ set( SOURCES
 
 # Multi-Step .gdextension file configuration.
 
-# First is to load the file into a variable
-file( READ gdextension.in GDEXT_FILE_STRING )
+set( GDEXT_FILE_STRING [[
+[configuration]
+entry_symbol = "${GDE_NAME}_library_init"
+compatibility_minimum = "${GODOT_VERSION_MAJOR}.${GODOT_VERSION_MINOR}"
+reloadable = $<IF:$<BOOL:${GODOTCPP_USE_HOT_RELOAD}>,true,false>
+
+[libraries] ]])
+
+foreach( TARGET editor template_debug template_release )
+  STRING( JOIN "."  FEATURES "${GODOTCPP_PLATFORM}" "${TARGET}" "${GODOTCPP_ARCH}" )
+  STRING( JOIN "\n" GDEXT_FILE_STRING "${GDEXT_FILE_STRING}" "${FEATURES} = \"bin/${GDE_NAME}.${FEATURES}.dll\"" )
+endforeach()
 
 # Replace variables with their content
 string( CONFIGURE "${GDEXT_FILE_STRING}" GDEXT_FILE_STRING_CONFIGURED)
