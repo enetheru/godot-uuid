@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.30.5)
 
+project( godot-uuid-extension
+        VERSION 1.0
+        DESCRIPTION ""
+        LANGUAGES CXX)
+
 #[=======================[ Global CMake Configuration ]=======================]
 if( CMAKE_C_COMPILER )
     #Do nothing, just shut up the build because clion adds this from the toolchain
@@ -52,10 +57,6 @@ include(cmake/godot-docs.cmake)
 
 find_package(Python3 3.4 REQUIRED) # pathlib should be present
 
-# header only copied across
-add_subdirectory( lib/stduuid )
-add_subdirectory( lib/uuid_v4 )
-
 #[==============[ Git ]==============]
 find_program(GIT_EXECUTABLE NAMES "git" DOC "" NO_CACHE REQUIRED)
 if( NOT EXISTS "${GIT_EXECUTABLE}" )
@@ -104,6 +105,10 @@ get_target_property( GODOTCPP_PLATFORM godot-cpp GODOTCPP_PLATFORM )
 get_target_property( GODOTCPP_TARGET godot-cpp GODOTCPP_TARGET )
 get_target_property( GODOTCPP_ARCH godot-cpp GODOTCPP_ARCH )
 
+# header only copied across
+add_subdirectory( lib/stduuid )
+add_subdirectory( lib/uuid_v4 )
+
 # MARK: project
 # ╒════════════════════════════════════════════════════════════════════════════╕
 # │ ██████  ██████   ██████       ██ ███████  ██████ ████████                  │
@@ -112,11 +117,6 @@ get_target_property( GODOTCPP_ARCH godot-cpp GODOTCPP_ARCH )
 # │ ██      ██   ██ ██    ██ ██   ██ ██      ██         ██                     │
 # │ ██      ██   ██  ██████   █████  ███████  ██████    ██                     │
 # ╘════════════════════════════════════════════════════════════════════════════╛
-
-project( godot-uuid-extension
-        VERSION 1.0
-        DESCRIPTION ""
-        LANGUAGES CXX)
 
 ### Global options
 set(CMAKE_CXX_STANDARD 20)
