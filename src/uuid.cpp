@@ -520,6 +520,18 @@ bool UUID::is_nil(const Variant &uuid) {
 
 
 bool UUID::is_valid(const Variant &uuid) {
+  if(uuid.get_type() == Variant::STRING) {
+    const auto from_str = static_cast<String>(uuid);
+    if (get_nil_uuid().length() != from_str.length()) {
+      return false;
+    }
+  }
+  else if(uuid.get_type() == Variant::PACKED_BYTE_ARRAY) {
+    const auto from_bytes = godot::VariantInternal::get_byte_array(&uuid);
+    if(from_bytes->size() != 16) {
+      return false;
+    }
+  }
   return to_stduuid(uuid).has_value();
 }
 
