@@ -28,7 +28,7 @@ Ref< RandomNumberGenerator > UUID::godot_rng{};
 
 // UUID generators
 uuids::uuid_name_generator UUID::stduuid_dung{ nil_stduuid }; // Default Unique Name Generator (DUNG)
-uuids::uuid_name_generator stduuid_dung{ nil_stduuid }; // Default Unique Name Generator (DUNG)
+static uuids::uuid_name_generator stduuid_dung{ nil_stduuid }; // Default Unique Name Generator (DUNG)
 
 std::unique_ptr< uuids::basic_uuid_random_generator< RandomNumberGenerator > >
         UUID::stduuid_burg{}; // Basic UUID Random Generator (BURG)
@@ -37,7 +37,7 @@ std::unique_ptr< uuids::basic_uuid_random_generator< RandomNumberGenerator > >
 // =====================================================================
 // Generate a random stduuid uuid
 // =====================================================================
-inline uuids::uuid generate_random_stduuid()
+static uuids::uuid generate_random_stduuid()
 {
   // Seeded ONCE per process with real entropy (same high-quality seed as before)
   static std::mt19937 rng = []() {
@@ -56,7 +56,7 @@ inline uuids::uuid generate_random_stduuid()
 // =====================================================================
 // Generate a random uuidv4 uuid
 // =====================================================================
-inline UUIDv4::UUID generate_random_uuidv4()
+static UUIDv4::UUID generate_random_uuidv4()
 {
   // High-quality 64-bit seed generated ONCE per process
   static UUIDv4::UUIDGenerator<std::mt19937_64> uuidv4_generator = []() {
@@ -521,14 +521,14 @@ bool UUID::is_nil(const Variant &uuid) {
 
 bool UUID::is_valid(const Variant &uuid) {
   if(uuid.get_type() == Variant::STRING) {
-    const auto from_str = static_cast<String>(uuid);
-    if (get_nil_uuid().length() != from_str.length()) {
+    if( const auto from_str = static_cast< String >(uuid);
+        get_nil_uuid().length() != from_str.length() ){
       return false;
     }
   }
   else if(uuid.get_type() == Variant::PACKED_BYTE_ARRAY) {
-    const auto from_bytes = godot::VariantInternal::get_byte_array(&uuid);
-    if(from_bytes->size() != 16) {
+    if( const auto from_bytes = godot::VariantInternal::get_byte_array(&uuid);
+        from_bytes->size() != 16 ){
       return false;
     }
   }
@@ -537,8 +537,10 @@ bool UUID::is_valid(const Variant &uuid) {
 
 
 bool UUID::equals(const Variant &uuid_a, const Variant &uuid_b) {
-  const auto uuid = to_stduuid(uuid_a);
-  if(!uuid.has_value()) return false;
+  if( const auto uuid = to_stduuid(uuid_a);
+      ! uuid.has_value() ) {
+    return false;
+  }
   return to_stduuid(uuid_a) == to_stduuid(uuid_b);
 }
 
